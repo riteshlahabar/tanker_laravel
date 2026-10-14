@@ -1,25 +1,58 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Modules\Core\Enums\RoleEnum;
+use App\Modules\Order\Models\Order;
+use App\Modules\Tanker\Models\Tanker;
+use App\Modules\Tanker\Models\TankerAssignment;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
+/**
+ * One account table for all three roles. The admin signs in with an email
+ * address; drivers and customers sign in with a mobile number.
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     /**
-     * Get the attributes that should be cast.
-     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'email',
+        'mobile',
+        'password',
+        'address',
+        'latitude',
+        'longitude',
+        'per_delivery_rate',
+        'status',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -27,6 +60,88 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'status' => 'boolean',
+            'system_reserve' => 'boolean',
+            'per_delivery_rate' => 'decimal:2',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return trim($this->first_name.' '.$this->last_name);
+    }
+
+    /**
+     * Driver side of the tanker history.
+     */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(TankerAssignment::class, 'driver_id');
+    }
+
+    /**
+     * The tanker this driver is running right now — the assignment row that
+     * has not been closed.
+     */
+    public function currentAssignment(): HasOne
+    {
+        return $this->hasOne(TankerAssignment::class, 'driver_id')->whereNull('assigned_to');
+    }
+
+    public function currentTanker(): ?Tanker
+    {
+        return $this->currentAssignment?->tanker;
+    }
+
+    /**
+     * Orders this driver was given — the base for the earning report's
+     * aggregates.
+     */
+    public function deliveredOrders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'driver_id');
+    }
+
+    /**
+     * Orders this customer placed.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'customer_id');
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', true);
+    }
+
+    /**
+     * Spatie already supplies a role() scope; this one just takes the enum.
+     */
+    public function scopeOfRole(Builder $query, RoleEnum $role): Builder
+    {
+        return $query->role($role->value);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(RoleEnum::Admin->value);
+    }
+
+    public function isDriver(): bool
+    {
+        return $this->hasRole(RoleEnum::Driver->value);
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->hasRole(RoleEnum::Customer->value);
+    }
+
+    public function roleName(): ?string
+    {
+        return $this->getRoleNames()->first();
     }
 }

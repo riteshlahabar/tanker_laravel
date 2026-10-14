@@ -35,4 +35,23 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | WhatsApp Gateway
+    |--------------------------------------------------------------------------
+    |
+    | driver: "log" records messages in whatsapp_messages without sending them
+    | (the default until the owner s Node.js service exists); "node" posts to
+    | the url below. Switching is a .env change only.
+    |
+    */
+
+    'whatsapp' => [
+        'driver' => env('WHATSAPP_DRIVER', 'log'),
+        'url' => env('WHATSAPP_URL', ''),
+        'token' => env('WHATSAPP_TOKEN'),
+        'timeout' => (int) env('WHATSAPP_TIMEOUT', 15),
+        'admin_number' => env('ADMIN_WHATSAPP_NUMBER', ''),
+    ],
+
 ];

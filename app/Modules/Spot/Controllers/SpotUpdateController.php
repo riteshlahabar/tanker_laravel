@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Spot\Controllers;
+
+use App\Modules\Spot\Contracts\SpotServiceInterface;
+use App\Modules\Spot\Models\Spot;
+use App\Modules\Spot\Requests\UpdateSpotRequest;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
+
+final class SpotUpdateController
+{
+    public function __construct(private readonly SpotServiceInterface $spots) {}
+
+    public function form(Spot $spot): View
+    {
+        Gate::authorize('update', $spot);
+
+        return view('spot::edit', ['spot' => $spot]);
+    }
+
+    public function update(UpdateSpotRequest $request, Spot $spot): RedirectResponse
+    {
+        $this->spots->update($spot, $request->validated());
+
+        return redirect()
+            ->route('admin.spot.index')
+            ->with('success', __('Spot updated successfully.'));
+    }
+}

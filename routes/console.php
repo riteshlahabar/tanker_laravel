@@ -1,8 +1,16 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+declare(strict_types=1);
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+use Illuminate\Support\Facades\Schedule;
+
+/*
+ * The owner's daily WhatsApp summary. Needs the scheduler running:
+ *   * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+ */
+Schedule::command('tanker:daily-report')
+    ->dailyAt('23:59')
+    ->timezone(config('app.timezone'))
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->description("Send the day's driver delivery and earning summary to the owner");
