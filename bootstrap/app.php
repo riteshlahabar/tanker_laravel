@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Auth\Http\Middleware\EnsureAccessToken;
 use App\Modules\Core\Http\Middleware\EnsureUserHasRole;
 use App\Modules\Core\Http\Middleware\EnsureUserIsActive;
 use App\Modules\Core\Http\Middleware\SecurityHeaders;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'active' => EnsureUserIsActive::class,
+            'access-token' => EnsureAccessToken::class,
             'permission' => PermissionMiddleware::class,
             'spatie.role' => RoleMiddleware::class,
             'ability' => CheckForAnyAbility::class,

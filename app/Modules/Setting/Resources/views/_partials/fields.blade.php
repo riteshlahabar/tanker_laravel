@@ -8,7 +8,12 @@
     :value="$settings['default_driver_rate'] ?? 150" :attrs="['step' => '0.01', 'min' => 0]" required />
 
 <x-form.text name="default_order_amount" label="Default Order Amount (₹)" type="number"
-    :value="$settings['default_order_amount'] ?? 0" help="Pre-filled on a new order; editable per order."
+    :value="$settings['default_order_amount'] ?? 0" help="Flat price per delivery. Pre-filled on a new order."
+    :attrs="['step' => '0.01', 'min' => 0]" required />
+
+<x-form.text name="price_per_litre" label="Price per Litre (₹)" type="number"
+    :value="$settings['price_per_litre'] ?? 0"
+    help="Leave at 0 to charge the flat amount above. Any value above 0 prices app orders by the litre instead."
     :attrs="['step' => '0.01', 'min' => 0]" required />
 
 <x-form.text name="daily_report_time" label="Daily Report Time" type="time"

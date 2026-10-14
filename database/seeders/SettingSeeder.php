@@ -17,6 +17,9 @@ final class SettingSeeder extends Seeder
         'daily_report_time' => '23:59',
         'default_driver_rate' => '150',
         'default_order_amount' => '0',
+        // Zero means "use the flat default_order_amount"; set a rate to price
+        // customer orders by the litre instead.
+        'price_per_litre' => '0',
         'company_name' => 'Tanker',
     ];
 
