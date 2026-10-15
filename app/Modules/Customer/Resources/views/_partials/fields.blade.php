@@ -9,6 +9,13 @@
 
 <x-form.status :value="$customer?->status ?? true" />
 
+{{-- Turned off for a standing-order customer: the office manages their
+     deliveries, so the app refuses an order they place themselves. --}}
+<x-form.select name="can_self_order" label="Can Place Own Orders"
+    :value="($customer?->can_self_order ?? true) ? 1 : 0"
+    :options="[1 => 'Yes — orders from the app', 0 => 'No — fixed routine managed by the office']"
+    help="Set to No for customers on a standing order." required />
+
 <x-form.password-pair :editing="$customer !== null" />
 
 <x-form.textarea name="address" label="Delivery Address" :value="$customer?->address" rows="2" />

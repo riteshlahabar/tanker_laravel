@@ -30,6 +30,9 @@ class StoreCustomerRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:1000'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            // Turned off for a standing-order customer: the office manages
+            // their deliveries, so the app refuses a self-placed order.
+            'can_self_order' => ['required', 'boolean'],
             'status' => ['required', 'boolean'],
         ];
     }
@@ -51,6 +54,7 @@ class StoreCustomerRequest extends FormRequest
     {
         $this->merge([
             'mobile' => preg_replace('/\D/', '', (string) $this->input('mobile')),
+            'can_self_order' => $this->boolean('can_self_order', true),
             'status' => $this->boolean('status'),
         ]);
     }

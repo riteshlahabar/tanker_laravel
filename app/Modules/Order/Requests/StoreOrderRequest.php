@@ -33,6 +33,11 @@ final class StoreOrderRequest extends FormRequest
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'delivery_date' => ['required', 'date', 'after_or_equal:today'],
             'delivery_slot' => ['nullable', 'string', 'max:50'],
+            // Naming a window is what gives the order a concrete delivery_at.
+            'delivery_slot_id' => [
+                'nullable', 'integer',
+                Rule::exists('delivery_slots', 'id')->whereNull('deleted_at'),
+            ],
             'quantity_litres' => ['nullable', 'integer', 'min:1', 'max:200000'],
             'order_amount' => ['required', 'numeric', 'min:0', 'max:9999999.99'],
             'notes' => ['nullable', 'string', 'max:1000'],

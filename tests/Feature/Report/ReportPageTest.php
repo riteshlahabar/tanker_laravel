@@ -27,6 +27,7 @@ final class ReportPageTest extends TestCase
      */
     private const REPORTS = [
         'driver-earning', 'daily-delivery', 'spot-refill', 'customer-order', 'tanker-utilisation',
+        'schedule-adherence',
     ];
 
     private User $adminUser;
@@ -75,7 +76,7 @@ final class ReportPageTest extends TestCase
             ->assertNotFound();
     }
 
-    public function test_the_registry_exposes_exactly_the_five_reports(): void
+    public function test_the_registry_exposes_exactly_the_six_reports(): void
     {
         $this->assertSame(self::REPORTS, array_keys(app(ReportRegistryInterface::class)->all()));
     }

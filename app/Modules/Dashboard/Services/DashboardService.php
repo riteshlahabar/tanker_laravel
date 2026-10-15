@@ -8,7 +8,9 @@ use App\Models\User;
 use App\Modules\Core\Enums\RoleEnum;
 use App\Modules\Dashboard\Contracts\DashboardServiceInterface;
 use App\Modules\Order\Contracts\OrderRepositoryInterface;
+use App\Modules\Schedule\Contracts\DeliveryScheduleRepositoryInterface;
 use App\Modules\Tanker\Models\Tanker;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -21,7 +23,10 @@ final class DashboardService implements DashboardServiceInterface
 
     private const CACHE_TTL = 60;
 
-    public function __construct(private readonly OrderRepositoryInterface $orders) {}
+    public function __construct(
+        private readonly OrderRepositoryInterface $orders,
+        private readonly DeliveryScheduleRepositoryInterface $schedules,
+    ) {}
 
     /**
      * @return array<string, int|float>
@@ -32,6 +37,9 @@ final class DashboardService implements DashboardServiceInterface
             'tankers' => Tanker::query()->where('status', true)->count(),
             'drivers' => User::query()->where('status', true)->role(RoleEnum::Driver->value)->count(),
             'customers' => User::query()->where('status', true)->role(RoleEnum::Customer->value)->count(),
+            // Standing orders are generated the night before, so the owner
+            // wants tomorrow's count to plan drivers against.
+            'scheduled_tomorrow' => $this->schedules->countDueOn(Carbon::tomorrow()),
             ...$this->orders->todaySummary(),
         ]);
     }

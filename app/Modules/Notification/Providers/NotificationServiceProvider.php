@@ -11,8 +11,12 @@ use App\Modules\Notification\Contracts\WhatsAppGatewayInterface;
 use App\Modules\Notification\Gateways\LogGateway;
 use App\Modules\Notification\Gateways\NodeApiGateway;
 use App\Modules\Notification\Listeners\SendOrderStatusNotification;
+use App\Modules\Notification\Listeners\SendScheduleRestoreNotification;
+use App\Modules\Notification\Listeners\SendScheduleSkipNotification;
 use App\Modules\Notification\Services\WhatsAppDispatcher;
 use App\Modules\Order\Events\OrderStatusChanged;
+use App\Modules\Schedule\Events\ScheduleRestored;
+use App\Modules\Schedule\Events\ScheduleSkipped;
 
 final class NotificationServiceProvider extends ModuleServiceProvider
 {
@@ -38,6 +42,10 @@ final class NotificationServiceProvider extends ModuleServiceProvider
     {
         return [
             OrderStatusChanged::class => [SendOrderStatusNotification::class],
+            // Standing orders announce themselves the same way: the Schedule
+            // module raises an event and knows nothing about WhatsApp.
+            ScheduleSkipped::class => [SendScheduleSkipNotification::class],
+            ScheduleRestored::class => [SendScheduleRestoreNotification::class],
         ];
     }
 

@@ -92,7 +92,8 @@ final class ApiLoginTest extends TestCase
 
         $this->withToken($token)->getJson(route('api.auth.me'))
             ->assertOk()
-            ->assertJsonPath('data.mobile', '9222222222');
+            ->assertJsonPath('data.mobile', '9222222222')
+            ->assertJsonPath('data.can_self_order', true);
     }
 
     public function test_access_token_cannot_be_used_to_refresh(): void

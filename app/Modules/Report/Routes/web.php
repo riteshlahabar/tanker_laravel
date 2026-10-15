@@ -6,6 +6,7 @@ use App\Modules\Report\Controllers\CustomerOrderReportController;
 use App\Modules\Report\Controllers\DailyDeliveryReportController;
 use App\Modules\Report\Controllers\DriverEarningReportController;
 use App\Modules\Report\Controllers\ReportExportController;
+use App\Modules\Report\Controllers\ScheduleAdherenceReportController;
 use App\Modules\Report\Controllers\SpotRefillReportController;
 use App\Modules\Report\Controllers\TankerUtilisationReportController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,7 @@ Route::middleware(['auth', 'active', 'role:admin'])
         Route::get('spot-refill', SpotRefillReportController::class)->name('spot-refill');
         Route::get('customer-order', CustomerOrderReportController::class)->name('customer-order');
         Route::get('tanker-utilisation', TankerUtilisationReportController::class)->name('tanker-utilisation');
+        Route::get('schedule-adherence', ScheduleAdherenceReportController::class)->name('schedule-adherence');
 
         Route::get('{report}/export', ReportExportController::class)
             ->middleware('throttle:exports')

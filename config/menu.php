@@ -43,6 +43,16 @@ return [
         'route' => 'admin.order.index',
     ],
     [
+        'title' => 'Standing Orders',
+        'icon' => 'to-do',
+        'route' => 'admin.schedule.index',
+    ],
+    [
+        'title' => 'Delivery Slots',
+        'icon' => 'coming-soon',
+        'route' => 'admin.slot.index',
+    ],
+    [
         'title' => 'Reports',
         'icon' => 'reports',
         'children' => [
@@ -51,6 +61,7 @@ return [
             ['title' => 'Spot Refills', 'route' => 'admin.report.spot-refill'],
             ['title' => 'Customer Orders', 'route' => 'admin.report.customer-order'],
             ['title' => 'Tanker Utilisation', 'route' => 'admin.report.tanker-utilisation'],
+            ['title' => 'Schedule Adherence', 'route' => 'admin.report.schedule-adherence'],
         ],
     ],
     [

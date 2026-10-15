@@ -30,6 +30,7 @@ final class AuthUserResource extends JsonResource
             'longitude' => $this->longitude,
             'role' => $this->roleName(),
             'status' => (bool) $this->status,
+            'can_self_order' => $this->canSelfOrder(),
         ];
     }
 }

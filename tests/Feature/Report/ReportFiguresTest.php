@@ -181,7 +181,7 @@ final class ReportFiguresTest extends TestCase
 
         $this->assertSame(2, $row[3]);
         $this->assertSame(2, $row[4]);
-        $this->assertSame(2400.0, $row[6]);
+        $this->assertSame(2400.0, $row[8]);
     }
 
     public function test_tanker_utilisation_counts_deliveries_per_tanker(): void

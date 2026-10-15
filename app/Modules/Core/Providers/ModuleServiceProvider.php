@@ -91,12 +91,21 @@ abstract class ModuleServiceProvider extends ServiceProvider
         $this->loadModuleRoutes();
     }
 
+    /**
+     * Blade namespace for this module's views. Defaults to the lowercased
+     * module name; override when that reads badly (DeliverySlot => "slot").
+     */
+    protected function viewNamespace(): string
+    {
+        return strtolower($this->name());
+    }
+
     private function loadModuleViews(): void
     {
         $views = $this->path('Resources/views');
 
         if (is_dir($views)) {
-            $this->loadViewsFrom($views, strtolower($this->name()));
+            $this->loadViewsFrom($views, $this->viewNamespace());
         }
     }
 

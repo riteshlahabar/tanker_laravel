@@ -14,6 +14,7 @@ final class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             AdminUserSeeder::class,
             SettingSeeder::class,
+            DeliverySlotSeeder::class,
         ]);
     }
 }

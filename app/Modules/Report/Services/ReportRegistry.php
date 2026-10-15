@@ -9,6 +9,7 @@ use App\Modules\Report\Contracts\ReportRegistryInterface;
 use App\Modules\Report\Reports\CustomerOrderReport;
 use App\Modules\Report\Reports\DailyDeliveryReport;
 use App\Modules\Report\Reports\DriverEarningReport;
+use App\Modules\Report\Reports\ScheduleAdherenceReport;
 use App\Modules\Report\Reports\SpotRefillReport;
 use App\Modules\Report\Reports\TankerUtilisationReport;
 use InvalidArgumentException;
@@ -28,6 +29,7 @@ final class ReportRegistry implements ReportRegistryInterface
         SpotRefillReport::class,
         CustomerOrderReport::class,
         TankerUtilisationReport::class,
+        ScheduleAdherenceReport::class,
     ];
 
     public function get(string $key): ReportInterface

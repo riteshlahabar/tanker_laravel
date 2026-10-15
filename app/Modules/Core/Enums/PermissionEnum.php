@@ -22,6 +22,14 @@ enum PermissionEnum: string
     case SpotView = 'spot.view';
     case SpotManage = 'spot.manage';
 
+    case SlotView = 'slot.view';
+    case SlotManage = 'slot.manage';
+
+    case ScheduleView = 'schedule.view';
+    case ScheduleManage = 'schedule.manage';
+    // A fixed-schedule customer calling off a single day of their own routine.
+    case ScheduleSkip = 'schedule.skip';
+
     case OrderView = 'order.view';
     case OrderCreate = 'order.create';
     case OrderAssign = 'order.assign';
@@ -54,11 +62,16 @@ enum PermissionEnum: string
                 self::OrderView->value,
                 self::OrderUpdateStatus->value,
                 self::SpotView->value,
+                self::SlotView->value,
             ],
             RoleEnum::Customer => [
                 self::OrderView->value,
                 self::OrderCreate->value,
                 self::OrderCancel->value,
+                self::SlotView->value,
+                // Read their own routine and call off a single day of it.
+                self::ScheduleView->value,
+                self::ScheduleSkip->value,
             ],
         };
     }

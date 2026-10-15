@@ -24,5 +24,12 @@
             <x-stat-tile label="Drivers" :value="$summary['drivers']" icon="stroke-user" colour="success" />
             <x-stat-tile label="Customers" :value="$summary['customers']" icon="stroke-contact" colour="warning" />
         </div>
+
+        <div class="row">
+            {{-- Generated at 00:05, so this is what the morning's driver
+                 assignments have to cover. --}}
+            <x-stat-tile label="Scheduled Tomorrow" :value="$summary['scheduled_tomorrow']"
+                icon="stroke-to-do" colour="primary" />
+        </div>
     </div>
 @endsection

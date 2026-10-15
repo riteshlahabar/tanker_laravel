@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Modules\Core\Enums\RoleEnum;
 use App\Modules\Order\Models\Order;
+use App\Modules\Schedule\Models\DeliverySchedule;
 use App\Modules\Tanker\Models\Tanker;
 use App\Modules\Tanker\Models\TankerAssignment;
 use Database\Factories\UserFactory;
@@ -41,6 +42,7 @@ class User extends Authenticatable
         'latitude',
         'longitude',
         'per_delivery_rate',
+        'can_self_order',
         'status',
     ];
 
@@ -61,6 +63,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'status' => 'boolean',
+            'can_self_order' => 'boolean',
             'system_reserve' => 'boolean',
             'per_delivery_rate' => 'decimal:2',
             'latitude' => 'decimal:7',
@@ -110,6 +113,23 @@ class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'customer_id');
+    }
+
+    /**
+     * Standing orders held for this customer.
+     */
+    public function deliverySchedules(): HasMany
+    {
+        return $this->hasMany(DeliverySchedule::class, 'customer_id');
+    }
+
+    /**
+     * A fixed-schedule customer has this turned off: the admin manages their
+     * deliveries, so the app refuses a self-placed order.
+     */
+    public function canSelfOrder(): bool
+    {
+        return (bool) $this->can_self_order;
     }
 
     public function scopeActive(Builder $query): Builder

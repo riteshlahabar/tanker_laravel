@@ -6,6 +6,8 @@ namespace App\Modules\Order\Models;
 
 use App\Models\User;
 use App\Modules\Core\Enums\OrderStatusEnum;
+use App\Modules\DeliverySlot\Models\DeliverySlot;
+use App\Modules\Schedule\Models\DeliverySchedule;
 use App\Modules\Spot\Models\Spot;
 use App\Modules\Tanker\Models\Tanker;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,11 +26,14 @@ class Order extends Model
     protected $fillable = [
         'order_no',
         'customer_id',
+        'delivery_schedule_id',
         'delivery_address',
         'latitude',
         'longitude',
         'delivery_date',
         'delivery_slot',
+        'delivery_slot_id',
+        'delivery_at',
         'quantity_litres',
         'order_amount',
         'driver_id',
@@ -53,6 +58,7 @@ class Order extends Model
         return [
             'status' => OrderStatusEnum::class,
             'delivery_date' => 'date',
+            'delivery_at' => 'datetime',
             'assigned_at' => 'datetime',
             'refilled_at' => 'datetime',
             'delivered_at' => 'datetime',
@@ -85,6 +91,20 @@ class Order extends Model
         return $this->belongsTo(Spot::class);
     }
 
+    /**
+     * The standing order that produced this one, when a schedule did. Null on
+     * every ad-hoc order, which is what separates the two in the reports.
+     */
+    public function schedule(): BelongsTo
+    {
+        return $this->belongsTo(DeliverySchedule::class, 'delivery_schedule_id');
+    }
+
+    public function slot(): BelongsTo
+    {
+        return $this->belongsTo(DeliverySlot::class, 'delivery_slot_id');
+    }
+
     public function statusLogs(): HasMany
     {
         return $this->hasMany(OrderStatusLog::class)->orderBy('id');
@@ -108,6 +128,21 @@ class Order extends Model
     public function scopeDeliveredBetween(Builder $query, string $from, string $to): Builder
     {
         return $query->delivered()->whereBetween('delivered_at', [$from.' 00:00:00', $to.' 23:59:59']);
+    }
+
+    public function scopeScheduled(Builder $query): Builder
+    {
+        return $query->whereNotNull('delivery_schedule_id');
+    }
+
+    public function scopeAdHoc(Builder $query): Builder
+    {
+        return $query->whereNull('delivery_schedule_id');
+    }
+
+    public function isScheduled(): bool
+    {
+        return $this->delivery_schedule_id !== null;
     }
 
     public function isAssigned(): bool

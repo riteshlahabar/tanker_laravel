@@ -25,6 +25,7 @@ final class OrderService extends BaseService implements OrderServiceInterface
         private readonly SpotRepositoryInterface $spots,
         private readonly OrderNumberGeneratorInterface $numbers,
         private readonly OrderStatusTransitioner $transitioner,
+        private readonly DeliveryAtResolver $deliveryAt,
     ) {}
 
     /**
@@ -32,6 +33,12 @@ final class OrderService extends BaseService implements OrderServiceInterface
      */
     public function place(array $data, User $placedBy): Order
     {
+        // Resolved here rather than in each controller, so every creation
+        // path — app, admin screen, nightly generator — lands a concrete
+        // delivery_at and the six-hour skip check always has something to
+        // compare against.
+        $data = $this->deliveryAt->apply($data);
+
         return $this->transaction(function () use ($data, $placedBy): Order {
             $order = $this->orders->store([
                 ...$data,

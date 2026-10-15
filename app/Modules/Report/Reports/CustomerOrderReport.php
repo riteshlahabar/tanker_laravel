@@ -32,7 +32,13 @@ final class CustomerOrderReport implements ReportInterface
      */
     public function headings(): array
     {
-        return ['Customer', 'Mobile', 'Address', 'Orders', 'Delivered', 'Litres', 'Amount Paid'];
+        return [
+            'Customer', 'Mobile', 'Address', 'Orders', 'Delivered',
+            // Which of those were standing orders rather than the customer
+            // ringing up — the owner's view of how much of the round is routine.
+            'Scheduled', 'Ad-hoc',
+            'Litres', 'Amount Paid',
+        ];
     }
 
     /**
@@ -56,6 +62,8 @@ final class CustomerOrderReport implements ReportInterface
                 $customer->address,
                 (int) $customer->orders_count,
                 (int) $customer->delivered_count,
+                (int) $customer->scheduled_count,
+                (int) $customer->adhoc_count,
                 (int) $customer->litres,
                 (float) $customer->amount_paid,
             ])
@@ -73,6 +81,7 @@ final class CustomerOrderReport implements ReportInterface
             'Customers ordered' => (string) $rows->where('orders_count', '>', 0)->count(),
             'Orders' => number_format((float) $rows->sum('orders_count')),
             'Delivered' => number_format((float) $rows->sum('delivered_count')),
+            'Scheduled' => number_format((float) $rows->sum('scheduled_count')),
             'Amount paid' => '₹ '.number_format((float) $rows->sum('amount_paid'), 2),
         ];
     }
@@ -90,6 +99,10 @@ final class CustomerOrderReport implements ReportInterface
             ->role(RoleEnum::Customer->value)
             ->withCount(['orders as orders_count' => $placed])
             ->withCount(['orders as delivered_count' => $delivered])
+            // A standing order is told apart by delivery_schedule_id alone,
+            // which is the only trace a schedule leaves on an order.
+            ->withCount(['orders as scheduled_count' => fn (Builder $query) => $placed($query)->whereNotNull('delivery_schedule_id')])
+            ->withCount(['orders as adhoc_count' => fn (Builder $query) => $placed($query)->whereNull('delivery_schedule_id')])
             ->withSum(['orders as litres' => $delivered], 'quantity_litres')
             ->withSum(['orders as amount_paid' => $delivered], 'order_amount')
             ->when($filters->customerId !== null, fn (Builder $q) => $q->whereKey($filters->customerId))

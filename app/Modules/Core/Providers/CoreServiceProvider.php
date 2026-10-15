@@ -8,10 +8,12 @@ use App\Modules\Auth\Providers\AuthServiceProvider;
 use App\Modules\Core\Console\CheckFileLimitsCommand;
 use App\Modules\Customer\Providers\CustomerServiceProvider;
 use App\Modules\Dashboard\Providers\DashboardServiceProvider;
+use App\Modules\DeliverySlot\Providers\DeliverySlotServiceProvider;
 use App\Modules\Driver\Providers\DriverServiceProvider;
 use App\Modules\Notification\Providers\NotificationServiceProvider;
 use App\Modules\Order\Providers\OrderServiceProvider;
 use App\Modules\Report\Providers\ReportServiceProvider;
+use App\Modules\Schedule\Providers\ScheduleServiceProvider;
 use App\Modules\Setting\Providers\SettingServiceProvider;
 use App\Modules\Spot\Providers\SpotServiceProvider;
 use App\Modules\Tanker\Providers\TankerServiceProvider;
@@ -35,6 +37,8 @@ final class CoreServiceProvider extends ServiceProvider
         DriverServiceProvider::class,
         CustomerServiceProvider::class,
         SpotServiceProvider::class,
+        DeliverySlotServiceProvider::class,
+        ScheduleServiceProvider::class,
         OrderServiceProvider::class,
         ReportServiceProvider::class,
         NotificationServiceProvider::class,
