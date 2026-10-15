@@ -12,6 +12,7 @@ use App\Modules\Order\Models\Order;
 use App\Modules\Spot\Models\Spot;
 use App\Modules\Tanker\Models\Tanker;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\SettingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Support\ApiActingAs;
 use Tests\Feature\Support\CreatesUsers;
@@ -224,12 +225,50 @@ final class AdminApiTest extends TestCase
         $this->withToken($refresh)->postJson(route('api.auth.refresh'))->assertOk();
     }
 
+    public function test_the_admin_can_read_settings_over_the_api(): void
+    {
+        $this->seed(SettingSeeder::class);
+
+        $this->actingAsApi($this->adminUser)
+            ->getJson(route('api.admin.settings.show'))
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                'company_name', 'admin_whatsapp_number', 'default_driver_rate',
+                'default_order_amount', 'price_per_litre', 'daily_report_time',
+            ]]);
+    }
+
+    public function test_the_admin_can_update_settings_over_the_api(): void
+    {
+        $this->actingAsApi($this->adminUser)
+            ->putJson(route('api.admin.settings.update'), [
+                'company_name' => 'Tanker Co',
+                'admin_whatsapp_number' => '919812345678',
+                'default_driver_rate' => 175,
+                'default_order_amount' => 1000,
+                'price_per_litre' => 0,
+                'daily_report_time' => '23:59',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.company_name', 'Tanker Co')
+            ->assertJsonPath('data.admin_whatsapp_number', '919812345678');
+    }
+
+    public function test_updating_settings_validates_the_fields(): void
+    {
+        $this->actingAsApi($this->adminUser)
+            ->putJson(route('api.admin.settings.update'), ['company_name' => ''])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['company_name', 'default_driver_rate']);
+    }
+
     public function test_every_api_endpoint_rejects_an_anonymous_request(): void
     {
         $routes = [
             route('api.admin.dashboard'),
             route('api.admin.orders.index'),
             route('api.admin.tankers.index'),
+            route('api.admin.settings.show'),
             route('api.admin.reports.index'),
             route('api.customer.orders.index'),
             route('api.driver.orders.index'),
