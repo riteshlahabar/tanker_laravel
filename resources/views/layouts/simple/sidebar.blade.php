@@ -3,8 +3,8 @@
     <div>
         <div class="logo-wrapper">
             <a href="{{ route('admin.dashboard') }}">
-                <img class="img-fluid for-light" style="max-height: 60px; width: auto;" src="{{ asset('assets/images/logo/logo.png') }}" alt="{{ config('app.name') }}">
-                <img class="img-fluid for-dark" style="max-height: 60px; width: auto;" src="{{ asset('assets/images/logo/logo_dark.png') }}" alt="{{ config('app.name') }}">
+                <img class="img-fluid for-light" style="max-height: 80px; width: auto;" src="{{ asset('assets/images/logo/logo.png') }}" alt="{{ config('app.name') }}">
+                <img class="img-fluid for-dark" style="max-height: 80px; width: auto;" src="{{ asset('assets/images/logo/logo_dark.png') }}" alt="{{ config('app.name') }}">
             </a>
             <div class="back-btn"><i class="fa-solid fa-angle-left"></i></div>
         </div>
