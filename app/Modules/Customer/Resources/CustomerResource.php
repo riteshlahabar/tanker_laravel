@@ -27,6 +27,7 @@ final class CustomerResource extends JsonResource
             'address' => $this->address,
             'latitude' => $this->latitude === null ? null : (float) $this->latitude,
             'longitude' => $this->longitude === null ? null : (float) $this->longitude,
+            'can_self_order' => $this->canSelfOrder(),
             'status' => (bool) $this->status,
         ];
     }

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Modules\Core\Enums\OrderStatusEnum;
 use App\Modules\Core\Enums\PermissionEnum;
 use App\Modules\Core\Enums\RoleEnum;
+use App\Modules\DeliverySlot\Models\DeliverySlot;
 use App\Modules\Order\Models\Order;
 use App\Modules\Spot\Models\Spot;
 use App\Modules\Tanker\Models\Tanker;
@@ -72,6 +73,70 @@ final class AdminApiTest extends TestCase
             ->assertJsonValidationErrors('vehicle_number');
     }
 
+    public function test_an_admin_can_list_delivery_slots_over_the_api(): void
+    {
+        DeliverySlot::query()->create([
+            'name' => 'Morning', 'start_time' => '08:00:00', 'end_time' => '12:00:00',
+        ]);
+
+        $this->actingAsApi($this->adminUser)
+            ->getJson(route('api.admin.delivery-slots.index'))
+            ->assertOk()
+            ->assertJsonPath('data.items.0.name', 'Morning')
+            ->assertJsonStructure(['data' => ['items' => [['id', 'name', 'label', 'start_time', 'end_time', 'sort_order', 'status']]]]);
+    }
+
+    public function test_an_admin_can_create_a_delivery_slot_over_the_api(): void
+    {
+        $this->actingAsApi($this->adminUser)
+            ->postJson(route('api.admin.delivery-slots.store'), [
+                'name' => 'Evening',
+                'start_time' => '16:00',
+                'end_time' => '20:00',
+                'status' => 1,
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.name', 'Evening');
+
+        $this->assertDatabaseHas('delivery_slots', ['name' => 'Evening']);
+    }
+
+    public function test_delivery_slot_validation_requires_end_after_start(): void
+    {
+        $this->actingAsApi($this->adminUser)
+            ->postJson(route('api.admin.delivery-slots.store'), [
+                'name' => 'Backwards',
+                'start_time' => '12:00',
+                'end_time' => '08:00',
+                'status' => 1,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('end_time');
+    }
+
+    public function test_an_admin_can_update_and_delete_a_delivery_slot_over_the_api(): void
+    {
+        $slot = DeliverySlot::query()->create([
+            'name' => 'Afternoon', 'start_time' => '12:00:00', 'end_time' => '16:00:00',
+        ]);
+
+        $this->actingAsApi($this->adminUser)
+            ->putJson(route('api.admin.delivery-slots.update', $slot), [
+                'name' => 'Afternoon (updated)',
+                'start_time' => '12:00',
+                'end_time' => '17:00',
+                'status' => 1,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Afternoon (updated)');
+
+        $this->actingAsApi($this->adminUser)
+            ->deleteJson(route('api.admin.delivery-slots.destroy', $slot))
+            ->assertOk();
+
+        $this->assertSoftDeleted('delivery_slots', ['id' => $slot->id]);
+    }
+
     public function test_an_admin_can_create_a_driver_with_a_tanker(): void
     {
         $tanker = Tanker::query()->create(['vehicle_name' => 'One', 'vehicle_number' => 'MH12AB1234']);
@@ -91,6 +156,39 @@ final class AdminApiTest extends TestCase
 
         $driver = User::query()->where('mobile', '9111111111')->firstOrFail();
         $this->assertTrue($driver->hasRole(RoleEnum::Driver->value));
+    }
+
+    public function test_an_admin_can_create_a_customer_over_the_api(): void
+    {
+        $this->actingAsApi($this->adminUser)
+            ->postJson(route('api.admin.customers.store'), [
+                'first_name' => 'Sunita',
+                'mobile' => '9444444444',
+                'password' => 'customer-pass-1',
+                'password_confirmation' => 'customer-pass-1',
+                'can_self_order' => false,
+                'status' => 1,
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.mobile', '9444444444')
+            ->assertJsonPath('data.can_self_order', false);
+    }
+
+    public function test_an_admin_can_update_a_customers_self_order_flag(): void
+    {
+        $customer = $this->userWithRole(RoleEnum::Customer, ['mobile' => '9555555555']);
+
+        $this->actingAsApi($this->adminUser)
+            ->putJson(route('api.admin.customers.update', $customer), [
+                'first_name' => $customer->first_name,
+                'mobile' => '9555555555',
+                'can_self_order' => false,
+                'status' => 1,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.can_self_order', false);
+
+        $this->assertFalse($customer->refresh()->canSelfOrder());
     }
 
     public function test_a_customer_id_cannot_be_updated_through_the_driver_endpoint(): void
@@ -269,6 +367,7 @@ final class AdminApiTest extends TestCase
             route('api.admin.orders.index'),
             route('api.admin.tankers.index'),
             route('api.admin.settings.show'),
+            route('api.admin.delivery-slots.index'),
             route('api.admin.reports.index'),
             route('api.customer.orders.index'),
             route('api.driver.orders.index'),
