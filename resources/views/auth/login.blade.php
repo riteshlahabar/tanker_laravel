@@ -10,8 +10,9 @@
                     <div>
                         <div>
                             <a class="logo" href="{{ url('/') }}">
-                                <img class="img-fluid for-light" src="{{ asset('assets/images/logo/logo.png') }}" alt="{{ config('app.name') }}">
-                                <img class="img-fluid for-dark" src="{{ asset('assets/images/logo/logo_dark.png') }}" alt="{{ config('app.name') }}">
+                                {{-- Capped inline: Cuba's own CSS loads after @section('css') and would win the cascade. The full wordmark is tall, so it needs a height limit the theme does not give it. --}}
+                                <img class="img-fluid for-light" style="max-height: 56px; width: auto" src="{{ asset('assets/images/logo/logo.png') }}" alt="{{ config('app.name') }}">
+                                <img class="img-fluid for-dark" style="max-height: 56px; width: auto" src="{{ asset('assets/images/logo/logo_dark.png') }}" alt="{{ config('app.name') }}">
                             </a>
                         </div>
                         <div class="login-main">

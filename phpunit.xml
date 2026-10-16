@@ -36,5 +36,12 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- The suite must never reach the WhatsApp service: QUEUE_CONNECTION=sync
+             runs SendWhatsAppMessage inline, so a real driver would have every
+             order test posting to the owner's live Node service. A test that
+             wants the scan gateway sets the config itself and fakes the HTTP. -->
+        <env name="WHATSAPP_DRIVER" value="log"/>
+        <env name="WHATSAPP_SCAN_BASE_URL" value=""/>
+        <env name="WHATSAPP_SCAN_API_KEY" value=""/>
     </php>
 </phpunit>

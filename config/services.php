@@ -47,11 +47,32 @@ return [
     */
 
     'whatsapp' => [
+        // log | node | scan. "scan" is the owner's Baileys QR-scan
+        // service, configured in the whatsapp_scan block below.
         'driver' => env('WHATSAPP_DRIVER', 'log'),
         'url' => env('WHATSAPP_URL', ''),
         'token' => env('WHATSAPP_TOKEN'),
         'timeout' => (int) env('WHATSAPP_TIMEOUT', 15),
         'admin_number' => env('ADMIN_WHATSAPP_NUMBER', ''),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | WhatsApp scan service (Node.js, Baileys)
+    |--------------------------------------------------------------------------
+    |
+    | The owner's microservice: it shows a QR, holds one WhatsApp Web session
+    | and sends messages. The panel reads /qr and /status for the scan screen
+    | and posts /send for every message. Every call but /health carries the
+    | key as an x-api-key header.
+    |
+    */
+
+    'whatsapp_scan' => [
+        'base_url' => rtrim((string) env('WHATSAPP_SCAN_BASE_URL', ''), '/'),
+        'api_key' => (string) env('WHATSAPP_SCAN_API_KEY', ''),
+        // Generous on purpose: a cold cPanel worker can take a while to wake.
+        'timeout' => (int) env('WHATSAPP_SCAN_TIMEOUT', 60),
     ],
 
 ];

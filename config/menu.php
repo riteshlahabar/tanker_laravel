@@ -74,4 +74,9 @@ return [
         'icon' => 'chat',
         'route' => 'admin.whatsapp.index',
     ],
+    [
+        'title' => 'WhatsApp Scan',
+        'icon' => 'chat',
+        'route' => 'admin.whatsapp.scan',
+    ],
 ];
