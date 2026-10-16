@@ -11,6 +11,7 @@ use App\Modules\Driver\Contracts\DriverRepositoryInterface;
 use App\Modules\Order\Contracts\OrderNumberGeneratorInterface;
 use App\Modules\Order\Contracts\OrderRepositoryInterface;
 use App\Modules\Order\Contracts\OrderServiceInterface;
+use App\Modules\Order\Events\OrderDriverReassigned;
 use App\Modules\Order\Events\OrderStatusChanged;
 use App\Modules\Order\Exceptions\OrderAssignmentException;
 use App\Modules\Order\Models\Order;
@@ -96,6 +97,71 @@ final class OrderService extends BaseService implements OrderServiceInterface
         ));
     }
 
+    public function reassign(
+        Order $order,
+        int $driverId,
+        ?int $spotId,
+        User $actor,
+        ?string $reason = null,
+    ): Order {
+        if ($order->driver_id === null) {
+            throw OrderAssignmentException::notYetAssigned();
+        }
+
+        // Deliberately narrower than "any open status": once the driver starts
+        // refilling, the water has been bought against them, so the delivery
+        // and its earning stay where they are.
+        if ($order->status !== OrderStatusEnum::Assigned) {
+            throw OrderAssignmentException::notReassignable($order->status);
+        }
+
+        $driver = $this->drivers->findOrFail($driverId);
+
+        if ($driver->id === $order->driver_id) {
+            throw OrderAssignmentException::alreadyThatDriver();
+        }
+
+        if (! $driver->status) {
+            throw OrderAssignmentException::driverInactive();
+        }
+
+        $tanker = $driver->currentTanker();
+
+        if ($tanker === null) {
+            throw OrderAssignmentException::driverHasNoTanker();
+        }
+
+        $spot = $this->resolveSpot($spotId);
+
+        // Read before the swap: afterwards the order no longer knows who had it.
+        $previous = $order->driver;
+
+        return $this->transaction(function () use ($order, $driver, $tanker, $spot, $previous, $actor, $reason): Order {
+            $order->update([
+                'driver_id' => $driver->id,
+                'tanker_id' => $tanker->id,
+                // The new driver's rate, since they make the delivery — the old
+                // snapshot would pay one driver at another's rate.
+                'driver_earning' => (float) $driver->per_delivery_rate,
+                // The spot is only re-snapshotted when a new one is named;
+                // keeping the original is right when only the driver changed.
+                ...($spot === null ? [] : [
+                    'spot_id' => $spot->id,
+                    'refill_charge' => (float) $spot->refill_charge,
+                ]),
+                // `assigned_at` is left alone on purpose: the order was assigned
+                // when it first was, and re-stamping it would tell the reports
+                // this order waited less than it did.
+            ]);
+
+            $this->transitioner->recordChange($order, $actor, $this->handoverNote($previous, $driver->full_name, $reason));
+
+            OrderDriverReassigned::dispatch($order->refresh(), $previous, $actor, $reason);
+
+            return $order;
+        });
+    }
+
     public function moveTo(Order $order, OrderStatusEnum $status, User $actor, ?string $note = null): Order
     {
         return $this->transaction(
@@ -111,6 +177,16 @@ final class OrderService extends BaseService implements OrderServiceInterface
             actor: $actor,
             note: $reason,
             extra: ['cancel_reason' => $reason],
+        ));
+    }
+
+    private function handoverNote(?User $previous, string $to, ?string $reason): string
+    {
+        return trim(sprintf(
+            'Driver changed from %s to %s%s',
+            $previous?->full_name ?? 'an unnamed driver',
+            $to,
+            $reason === null || trim($reason) === '' ? '' : ' — '.trim($reason),
         ));
     }
 

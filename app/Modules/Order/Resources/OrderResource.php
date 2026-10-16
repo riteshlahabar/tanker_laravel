@@ -33,6 +33,10 @@ final class OrderResource extends JsonResource
             'driver_earning' => (float) $this->driver_earning,
             'notes' => $this->notes,
             'cancel_reason' => $this->cancel_reason,
+            // So a detail screen can say "this came from a routine". The app
+            // has no other way to tell, and the change-driver sheet has to
+            // promise that the routine itself is left alone.
+            'is_scheduled' => $this->delivery_schedule_id !== null,
             'assigned_at' => $this->assigned_at?->toIso8601String(),
             'refilled_at' => $this->refilled_at?->toIso8601String(),
             'customer' => $this->whenLoaded('customer', fn (): array => [

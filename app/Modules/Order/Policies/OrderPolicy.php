@@ -42,6 +42,16 @@ final class OrderPolicy
     }
 
     /**
+     * Handing the order to a different driver. Same permission as the first
+     * assignment — whether the service will actually allow it depends on the
+     * order's status, which is the service's rule, not the policy's.
+     */
+    public function reassign(User $user, Order $order): bool
+    {
+        return $this->assign($user, $order);
+    }
+
+    /**
      * The driver moves the order along the road; the admin can override.
      */
     public function updateStatus(User $user, Order $order): bool

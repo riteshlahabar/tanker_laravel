@@ -12,11 +12,13 @@ use App\Modules\Notification\Contracts\WhatsAppScanClientInterface;
 use App\Modules\Notification\Gateways\LogGateway;
 use App\Modules\Notification\Gateways\NodeApiGateway;
 use App\Modules\Notification\Gateways\ScanApiGateway;
+use App\Modules\Notification\Listeners\SendOrderReassignedNotification;
 use App\Modules\Notification\Listeners\SendOrderStatusNotification;
 use App\Modules\Notification\Listeners\SendScheduleRestoreNotification;
 use App\Modules\Notification\Listeners\SendScheduleSkipNotification;
 use App\Modules\Notification\Services\WhatsAppDispatcher;
 use App\Modules\Notification\Services\WhatsAppScanClient;
+use App\Modules\Order\Events\OrderDriverReassigned;
 use App\Modules\Order\Events\OrderStatusChanged;
 use App\Modules\Schedule\Events\ScheduleRestored;
 use App\Modules\Schedule\Events\ScheduleSkipped;
@@ -45,6 +47,9 @@ final class NotificationServiceProvider extends ModuleServiceProvider
     {
         return [
             OrderStatusChanged::class => [SendOrderStatusNotification::class],
+            // A driver handover does not move the status, so it carries its own
+            // event rather than going through OrderMessageFactory.
+            OrderDriverReassigned::class => [SendOrderReassignedNotification::class],
             // Standing orders announce themselves the same way: the Schedule
             // module raises an event and knows nothing about WhatsApp.
             ScheduleSkipped::class => [SendScheduleSkipNotification::class],

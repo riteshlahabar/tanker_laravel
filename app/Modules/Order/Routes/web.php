@@ -7,6 +7,7 @@ use App\Modules\Order\Controllers\OrderCancelController;
 use App\Modules\Order\Controllers\OrderCreateController;
 use App\Modules\Order\Controllers\OrderExportController;
 use App\Modules\Order\Controllers\OrderListController;
+use App\Modules\Order\Controllers\OrderReassignController;
 use App\Modules\Order\Controllers\OrderShowController;
 use App\Modules\Order\Controllers\OrderStatusController;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,11 @@ Route::middleware(['auth', 'active', 'role:admin'])
 
         Route::get('{order}/assign', [OrderAssignController::class, 'form'])->name('assign.form');
         Route::put('{order}/assign', [OrderAssignController::class, 'update'])->name('assign.update');
+
+        // Changing the driver on an order that already has one — the absent-driver
+        // case. Kept apart from assign because the rule is narrower.
+        Route::get('{order}/reassign', [OrderReassignController::class, 'form'])->name('reassign.form');
+        Route::put('{order}/reassign', [OrderReassignController::class, 'update'])->name('reassign.update');
 
         Route::put('{order}/status', OrderStatusController::class)->name('status');
         Route::put('{order}/cancel', OrderCancelController::class)->name('cancel');

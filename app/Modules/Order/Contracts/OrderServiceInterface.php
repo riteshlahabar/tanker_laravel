@@ -27,6 +27,24 @@ interface OrderServiceInterface
     public function assign(Order $order, int $driverId, ?int $spotId, User $actor): Order;
 
     /**
+     * Hand an already-assigned order to a different driver — the absent-driver
+     * case, and the only way a standing order's preferred driver can be
+     * overridden for one day without cancelling the order.
+     *
+     * The status does not move: the order stays `assigned`, with the new
+     * driver, their current tanker and their own per-delivery rate.
+     *
+     * @throws OrderAssignmentException
+     */
+    public function reassign(
+        Order $order,
+        int $driverId,
+        ?int $spotId,
+        User $actor,
+        ?string $reason = null,
+    ): Order;
+
+    /**
      * @throws InvalidStatusTransitionException
      */
     public function moveTo(Order $order, OrderStatusEnum $status, User $actor, ?string $note = null): Order;

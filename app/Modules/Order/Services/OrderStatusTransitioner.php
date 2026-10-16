@@ -74,6 +74,22 @@ final class OrderStatusTransitioner
     }
 
     /**
+     * Records something that changed about the order *without* moving its
+     * status — a driver handover being the one case. Kept here so
+     * `order_status_logs` still has exactly one writer, and so the timeline
+     * shows the change rather than it happening silently.
+     */
+    public function recordChange(Order $order, User $actor, string $note): void
+    {
+        OrderStatusLog::query()->create([
+            'order_id' => $order->id,
+            'status' => $order->status,
+            'changed_by' => $actor->id,
+            'note' => $note,
+        ]);
+    }
+
+    /**
      * @return array<string, Carbon>
      */
     private function stampFor(OrderStatusEnum $status): array

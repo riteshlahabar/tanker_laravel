@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Modules\Order\Controllers\Api\Admin\AssignOrderController;
 use App\Modules\Order\Controllers\Api\Admin\CreateOrderController;
 use App\Modules\Order\Controllers\Api\Admin\OrderListController as AdminOrderListController;
+use App\Modules\Order\Controllers\Api\Admin\ReassignOrderController;
 use App\Modules\Order\Controllers\Api\CancelOrderController;
 use App\Modules\Order\Controllers\Api\Customer\MyOrdersController;
 use App\Modules\Order\Controllers\Api\Customer\PlaceOrderController;
@@ -43,6 +44,7 @@ Route::middleware(['auth:sanctum', 'access-token', 'active', 'throttle:api'])->g
         Route::post('orders', CreateOrderController::class)->name('orders.store');
         Route::get('orders/{order}', OrderDetailController::class)->name('orders.show');
         Route::post('orders/{order}/assign', AssignOrderController::class)->name('orders.assign');
+        Route::post('orders/{order}/reassign', ReassignOrderController::class)->name('orders.reassign');
         Route::post('orders/{order}/cancel', CancelOrderController::class)->name('orders.cancel');
     });
 });
