@@ -7,8 +7,9 @@
 
 <x-form.textarea name="delivery_address" label="Delivery Address" rows="2" required />
 
-<x-form.text name="quantity_litres" label="Quantity (litres)" type="number" placeholder="e.g. 5000"
-    :attrs="['min' => 1, 'max' => 200000]" />
+<x-form.text name="tanker_count" label="Number of Tankers" type="number"
+    :value="old('tanker_count', 1)" help="How many tanker-loads this delivery is for."
+    :attrs="['min' => 1, 'max' => 20]" />
 
 <x-form.text name="order_amount" label="Order Amount (₹)" type="number" :value="old('order_amount', $defaultAmount)"
     help="What the customer pays for this delivery." :attrs="['step' => '0.01', 'min' => 0]" required />

@@ -41,7 +41,7 @@ final class CustomerApiTest extends TestCase
             ->postJson(route('api.customer.orders.store'), [
                 'delivery_address' => 'Kothrud, Pune',
                 'delivery_date' => now()->toDateString(),
-                'quantity_litres' => 5000,
+                'tanker_count' => 1,
             ])
             ->assertCreated()
             ->assertJsonPath('success', true)
@@ -63,7 +63,7 @@ final class CustomerApiTest extends TestCase
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
                 'delivery_date' => now()->toDateString(),
-                'quantity_litres' => 5000,
+                'tanker_count' => 1,
             ])
             ->assertCreated()
             ->assertJsonPath('data.delivery_address', 'Kothrud, Pune')
@@ -104,20 +104,39 @@ final class CustomerApiTest extends TestCase
         $this->assertSame($this->customer->id, Order::query()->firstOrFail()->customer_id);
     }
 
-    public function test_per_litre_pricing_is_used_when_configured(): void
+    public function test_per_tanker_pricing_multiplies_by_the_number_ordered(): void
     {
         $settings = app(SettingRepositoryInterface::class);
         $settings->put('default_order_amount', '1200');
-        $settings->put('price_per_litre', '0.25');
+        $settings->put('price_per_tanker', '900');
 
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
                 'delivery_address' => 'Kothrud, Pune',
                 'delivery_date' => now()->toDateString(),
-                'quantity_litres' => 5000,
+                'tanker_count' => 3,
             ])
             ->assertCreated()
-            ->assertJsonPath('data.order_amount', 1250);
+            // 3 × 900, not the flat 1200: a rate above zero wins.
+            ->assertJsonPath('data.order_amount', 2700)
+            ->assertJsonPath('data.tanker_count', 3);
+    }
+
+    public function test_the_flat_amount_applies_when_no_per_tanker_rate_is_set(): void
+    {
+        $settings = app(SettingRepositoryInterface::class);
+        $settings->put('default_order_amount', '1200');
+        $settings->put('price_per_tanker', '0');
+
+        $this->actingAsApi($this->customer)
+            ->postJson(route('api.customer.orders.store'), [
+                'delivery_address' => 'Kothrud, Pune',
+                'delivery_date' => now()->toDateString(),
+                'tanker_count' => 2,
+            ])
+            ->assertCreated()
+            // Zero means "charge the flat amount", so the count does not multiply it.
+            ->assertJsonPath('data.order_amount', 1200);
     }
 
     public function test_a_past_delivery_date_is_refused(): void

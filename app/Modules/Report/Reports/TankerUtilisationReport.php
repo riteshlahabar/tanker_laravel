@@ -31,7 +31,7 @@ final class TankerUtilisationReport implements ReportInterface
      */
     public function headings(): array
     {
-        return ['Tanker', 'Vehicle Number', 'Capacity (L)', 'Current Driver', 'Deliveries', 'Litres', 'Revenue'];
+        return ['Tanker', 'Vehicle Number', 'Rate per Tanker', 'Current Driver', 'Deliveries', 'Tankers', 'Revenue'];
     }
 
     /**
@@ -52,10 +52,10 @@ final class TankerUtilisationReport implements ReportInterface
             ->map(fn (Tanker $tanker): array => [
                 $tanker->vehicle_name,
                 $tanker->vehicle_number,
-                $tanker->capacity_litres,
+                (float) ($tanker->tanker_rate ?? 0),
                 $tanker->currentAssignment?->driver?->full_name ?? '—',
                 (int) $tanker->deliveries,
-                (int) $tanker->litres,
+                (int) $tanker->loads,
                 (float) $tanker->revenue,
             ])
             ->values();
@@ -71,7 +71,7 @@ final class TankerUtilisationReport implements ReportInterface
         return [
             'Tankers used' => (string) $rows->where('deliveries', '>', 0)->count(),
             'Deliveries' => number_format((float) $rows->sum('deliveries')),
-            'Litres delivered' => number_format((float) $rows->sum('litres')),
+            'Tankers delivered' => number_format((float) $rows->sum('loads')),
             'Revenue' => '₹ '.number_format((float) $rows->sum('revenue'), 2),
         ];
     }
@@ -85,7 +85,7 @@ final class TankerUtilisationReport implements ReportInterface
         return Tanker::query()
             ->with('currentAssignment.driver:id,first_name,last_name')
             ->withCount(['orders as deliveries' => $inRange])
-            ->withSum(['orders as litres' => $inRange], 'quantity_litres')
+            ->withSum(['orders as loads' => $inRange], 'tanker_count')
             ->withSum(['orders as revenue' => $inRange], 'order_amount')
             ->when($filters->tankerId !== null, fn (Builder $q) => $q->whereKey($filters->tankerId))
             ->when($filters->search !== null, fn (Builder $q) => $q

@@ -37,7 +37,7 @@ final class CustomerOrderReport implements ReportInterface
             // Which of those were standing orders rather than the customer
             // ringing up — the owner's view of how much of the round is routine.
             'Scheduled', 'Ad-hoc',
-            'Litres', 'Amount Paid',
+            'Tankers', 'Amount Paid',
         ];
     }
 
@@ -64,7 +64,7 @@ final class CustomerOrderReport implements ReportInterface
                 (int) $customer->delivered_count,
                 (int) $customer->scheduled_count,
                 (int) $customer->adhoc_count,
-                (int) $customer->litres,
+                (int) $customer->tanker_loads,
                 (float) $customer->amount_paid,
             ])
             ->values();
@@ -103,7 +103,7 @@ final class CustomerOrderReport implements ReportInterface
             // which is the only trace a schedule leaves on an order.
             ->withCount(['orders as scheduled_count' => fn (Builder $query) => $placed($query)->whereNotNull('delivery_schedule_id')])
             ->withCount(['orders as adhoc_count' => fn (Builder $query) => $placed($query)->whereNull('delivery_schedule_id')])
-            ->withSum(['orders as litres' => $delivered], 'quantity_litres')
+            ->withSum(['orders as tanker_loads' => $delivered], 'tanker_count')
             ->withSum(['orders as amount_paid' => $delivered], 'order_amount')
             ->when($filters->customerId !== null, fn (Builder $q) => $q->whereKey($filters->customerId))
             ->when($filters->search !== null, fn (Builder $q) => $q

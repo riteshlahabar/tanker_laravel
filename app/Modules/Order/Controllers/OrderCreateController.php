@@ -39,7 +39,7 @@ final class OrderCreateController
 
     public function store(StoreOrderRequest $request): RedirectResponse
     {
-        $order = $this->orders->place($request->validated(), $request->user());
+        $order = $this->orders->place($request->orderData(), $request->user());
 
         return redirect()
             ->route('admin.order.show', $order)

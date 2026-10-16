@@ -31,7 +31,7 @@ final class SpotRefillReport implements ReportInterface
      */
     public function headings(): array
     {
-        return ['Spot', 'Address', 'Charge per Refill', 'Refills', 'Total Refill Cost', 'Litres Delivered'];
+        return ['Spot', 'Address', 'Charge per Refill', 'Refills', 'Total Refill Cost', 'Tankers Delivered'];
     }
 
     /**
@@ -55,7 +55,7 @@ final class SpotRefillReport implements ReportInterface
                 (float) $spot->refill_charge,
                 (int) $spot->refills,
                 (float) $spot->refill_cost,
-                (int) $spot->litres,
+                (int) $spot->tanker_loads,
             ])
             ->values();
     }
@@ -83,7 +83,7 @@ final class SpotRefillReport implements ReportInterface
         return Spot::query()
             ->withCount(['orders as refills' => $inRange])
             ->withSum(['orders as refill_cost' => $inRange], 'refill_charge')
-            ->withSum(['orders as litres' => $inRange], 'quantity_litres')
+            ->withSum(['orders as tanker_loads' => $inRange], 'tanker_count')
             ->when($filters->spotId !== null, fn (Builder $q) => $q->whereKey($filters->spotId))
             ->when($filters->search !== null, fn (Builder $q) => $q
                 ->whereAny(['name', 'address'], 'like', "%{$filters->search}%"))

@@ -50,7 +50,7 @@ final class AdminApiTest extends TestCase
             ->postJson(route('api.admin.tankers.store'), [
                 'vehicle_name' => 'Water Tanker 1',
                 'vehicle_number' => 'mh12ab1234',
-                'capacity_litres' => 5000,
+                'capacity_litres' => 5000, 'tanker_rate' => 1200,
                 'status' => 1,
             ])
             ->assertCreated()
@@ -332,7 +332,7 @@ final class AdminApiTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 'company_name', 'admin_whatsapp_number', 'default_driver_rate',
-                'default_order_amount', 'price_per_litre', 'daily_report_time',
+                'default_order_amount', 'price_per_tanker', 'daily_report_time',
             ]]);
     }
 
@@ -344,7 +344,7 @@ final class AdminApiTest extends TestCase
                 'admin_whatsapp_number' => '919812345678',
                 'default_driver_rate' => 175,
                 'default_order_amount' => 1000,
-                'price_per_litre' => 0,
+                'price_per_tanker' => 1200,
                 'daily_report_time' => '23:59',
             ])
             ->assertOk()

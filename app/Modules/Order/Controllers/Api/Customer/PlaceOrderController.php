@@ -21,7 +21,9 @@ final class PlaceOrderController
 
     public function __invoke(PlaceOrderRequest $request): JsonResponse
     {
-        $amount = $this->pricing->amountFor((int) $request->input('quantity_litres'));
+        // No vehicle is known yet, so this is the configured per-tanker price.
+        // Assignment re-prices it from the tanker that actually goes out.
+        $amount = $this->pricing->amountFor((int) $request->input('tanker_count'));
 
         $order = $this->orders->place($request->orderData($amount), $request->user());
 

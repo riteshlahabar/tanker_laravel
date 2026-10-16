@@ -51,7 +51,7 @@ final class OrderExport implements FromQuery, ShouldAutoSize, WithHeadings, With
     public function headings(): array
     {
         return [
-            'Order No', 'Customer', 'Mobile', 'Delivery Address', 'Delivery Date', 'Litres',
+            'Order No', 'Customer', 'Mobile', 'Delivery Address', 'Delivery Date', 'Tankers',
             'Amount', 'Driver', 'Tanker', 'Refill Spot', 'Refill Charge', 'Driver Earning',
             'Status', 'Delivered At',
         ];
@@ -69,7 +69,7 @@ final class OrderExport implements FromQuery, ShouldAutoSize, WithHeadings, With
             $row->customer?->mobile,
             $row->delivery_address,
             $row->delivery_date?->format('d-m-Y'),
-            $row->quantity_litres,
+            $row->tanker_count,
             (float) $row->order_amount,
             $row->driver?->full_name,
             $row->tanker?->vehicle_number,

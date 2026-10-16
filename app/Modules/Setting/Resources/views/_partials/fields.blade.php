@@ -11,9 +11,9 @@
     :value="$settings['default_order_amount'] ?? 0" help="Flat price per delivery. Pre-filled on a new order."
     :attrs="['step' => '0.01', 'min' => 0]" required />
 
-<x-form.text name="price_per_litre" label="Price per Litre (₹)" type="number"
-    :value="$settings['price_per_litre'] ?? 0"
-    help="Leave at 0 to charge the flat amount above. Any value above 0 prices app orders by the litre instead."
+<x-form.text name="price_per_tanker" label="Price per Tanker (₹)" type="number"
+    :value="$settings['price_per_tanker'] ?? 0"
+    help="The price of one tanker-load, used for vehicles with no rate of their own. Leave at 0 to charge the flat amount above."
     :attrs="['step' => '0.01', 'min' => 0]" required />
 
 <x-form.text name="daily_report_time" label="Daily Report Time" type="time"

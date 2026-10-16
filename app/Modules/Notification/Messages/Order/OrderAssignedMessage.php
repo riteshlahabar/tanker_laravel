@@ -21,12 +21,18 @@ final class OrderAssignedMessage extends OrderMessage
 
     public function body(): string
     {
+        // The amount is included because assignment is where it can change:
+        // water is priced per tanker-load and the rate belongs to the vehicle,
+        // which is not known until a driver is given the order.
         return sprintf(
-            "Order %s is assigned.\nDriver: %s (%s)\nTanker: %s\nRefill spot: %s\nDelivery: %s\nAddress: %s",
+            "Order %s is assigned.\nDriver: %s (%s)\nTanker: %s\nTankers: %d\nAmount: %s\n".
+            "Refill spot: %s\nDelivery: %s\nAddress: %s",
             $this->order->order_no,
             $this->order->driver?->full_name ?? '—',
             $this->order->driver?->mobile ?? '—',
             $this->order->tanker?->label() ?? '—',
+            $this->order->tanker_count ?? 1,
+            $this->money($this->order->order_amount),
             $this->order->spot?->name ?? 'to be decided on the route',
             $this->deliveryLine(),
             $this->order->delivery_address,

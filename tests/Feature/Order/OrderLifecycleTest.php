@@ -244,7 +244,7 @@ final class OrderLifecycleTest extends TestCase
             'customer_id' => $this->customer->id,
             'delivery_address' => 'Kothrud, Pune',
             'delivery_date' => now()->toDateString(),
-            'quantity_litres' => 5000,
+            'tanker_count' => 1,
             'order_amount' => 1200,
         ];
     }

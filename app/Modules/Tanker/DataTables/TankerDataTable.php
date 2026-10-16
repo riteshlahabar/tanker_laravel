@@ -19,6 +19,9 @@ final class TankerDataTable extends DataTable
             ->editColumn('capacity_litres', fn (Tanker $row): string => $row->capacity_litres
                 ? number_format((float) $row->capacity_litres).' L'
                 : '—')
+            ->editColumn('tanker_rate', fn (Tanker $row): string => $row->tanker_rate === null
+                ? '<span class="f-light">default</span>'
+                : '₹ '.number_format((float) $row->tanker_rate, 2))
             ->editColumn('insurance_expiry', fn (Tanker $row): string => $row->insurance_expiry
                 ?->format('d M Y') ?? '—')
             ->addColumn('driver', fn (Tanker $row): string => $row->currentAssignment?->driver?->full_name
@@ -34,7 +37,7 @@ final class TankerDataTable extends DataTable
                 'delete' => 'admin.tanker.destroy',
                 'data' => $row,
             ])->render())
-            ->rawColumns(['driver', 'status', 'action']);
+            ->rawColumns(['tanker_rate', 'driver', 'status', 'action']);
     }
 
     /**
@@ -58,6 +61,7 @@ final class TankerDataTable extends DataTable
             ->addColumn(['data' => 'vehicle_name', 'title' => __('Vehicle Name')])
             ->addColumn(['data' => 'vehicle_number', 'title' => __('Vehicle Number')])
             ->addColumn(['data' => 'capacity_litres', 'title' => __('Capacity')])
+            ->addColumn(['data' => 'tanker_rate', 'title' => __('Rate / Tanker'), 'searchable' => false])
             ->addColumn(['data' => 'driver', 'title' => __('Current Driver'), 'orderable' => false, 'searchable' => false])
             ->addColumn(['data' => 'insurance_expiry', 'title' => __('Insurance Expiry'), 'searchable' => false])
             ->addColumn(['data' => 'status', 'title' => __('Status'), 'orderable' => false, 'searchable' => false])

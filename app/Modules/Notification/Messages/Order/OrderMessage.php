@@ -29,6 +29,7 @@ abstract class OrderMessage implements WhatsAppMessageInterface
             'customer' => $this->order->customer?->full_name,
             'driver' => $this->order->driver?->full_name,
             'tanker' => $this->order->tanker?->vehicle_number,
+            'tanker_count' => $this->order->tanker_count,
             'spot' => $this->order->spot?->name,
             'amount' => (float) $this->order->order_amount,
             'delivery_date' => $this->order->delivery_date?->toDateString(),

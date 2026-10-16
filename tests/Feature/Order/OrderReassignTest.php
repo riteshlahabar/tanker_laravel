@@ -188,7 +188,7 @@ final class OrderReassignTest extends TestCase
         $schedule = DeliverySchedule::query()->create([
             'customer_id' => $this->customer->id,
             'interval_days' => 1,
-            'quantity_litres' => 5000,
+            'tanker_count' => 1,
             'delivery_time' => '09:00',
             'delivery_address' => 'Kothrud, Pune',
             // The routine's usual driver — first preference for every day it makes.
@@ -297,7 +297,7 @@ final class OrderReassignTest extends TestCase
             'customer_id' => $this->customer->id,
             'delivery_address' => 'Kothrud, Pune',
             'delivery_date' => now()->toDateString(),
-            'quantity_litres' => 5000,
+            'tanker_count' => 1,
             'order_amount' => 1200,
             ...$attributes,
         ], $this->adminUser);

@@ -34,8 +34,9 @@ class Order extends Model
         'delivery_slot',
         'delivery_slot_id',
         'delivery_at',
-        'quantity_litres',
+        'tanker_count',
         'order_amount',
+        'amount_fixed',
         'driver_id',
         'tanker_id',
         'spot_id',
@@ -67,7 +68,8 @@ class Order extends Model
             'driver_earning' => 'decimal:2',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
-            'quantity_litres' => 'integer',
+            'tanker_count' => 'integer',
+            'amount_fixed' => 'boolean',
         ];
     }
 

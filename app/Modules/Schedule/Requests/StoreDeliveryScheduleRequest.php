@@ -34,7 +34,7 @@ class StoreDeliveryScheduleRequest extends FormRequest
             'weekdays' => ['nullable', 'array', 'max:7'],
             'weekdays.*' => ['integer', 'between:1,7'],
 
-            'quantity_litres' => ['nullable', 'integer', 'min:1', 'max:200000'],
+            'tanker_count' => ['nullable', 'integer', 'min:1', 'max:20'],
             'order_amount' => ['nullable', 'numeric', 'min:0', 'max:9999999.99'],
 
             // One or the other must be named: the six-hour notice has to count

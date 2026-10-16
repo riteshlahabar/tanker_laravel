@@ -23,6 +23,7 @@ class Tanker extends Model
         'vehicle_name',
         'vehicle_number',
         'capacity_litres',
+        'tanker_rate',
         'model_year',
         'rc_number',
         'insurance_expiry',
@@ -39,6 +40,7 @@ class Tanker extends Model
             'status' => 'boolean',
             'insurance_expiry' => 'date',
             'capacity_litres' => 'integer',
+            'tanker_rate' => 'decimal:2',
         ];
     }
 

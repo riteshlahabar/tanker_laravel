@@ -17,6 +17,7 @@ use App\Modules\Order\Exceptions\OrderAssignmentException;
 use App\Modules\Order\Models\Order;
 use App\Modules\Spot\Contracts\SpotRepositoryInterface;
 use App\Modules\Spot\Models\Spot;
+use App\Modules\Tanker\Models\Tanker;
 
 final class OrderService extends BaseService implements OrderServiceInterface
 {
@@ -28,6 +29,7 @@ final class OrderService extends BaseService implements OrderServiceInterface
         private readonly OrderStatusTransitioner $transitioner,
         private readonly DeliveryAtResolver $deliveryAt,
         private readonly CustomerAddressResolver $customerAddress,
+        private readonly OrderPricing $pricing,
     ) {}
 
     /**
@@ -93,8 +95,29 @@ final class OrderService extends BaseService implements OrderServiceInterface
                 // Snapshots, so later rate or charge changes never rewrite history.
                 'refill_charge' => (float) ($spot?->refill_charge ?? 0),
                 'driver_earning' => (float) $driver->per_delivery_rate,
+                ...$this->priceFor($order, $tanker),
             ],
         ));
+    }
+
+    /**
+     * Water is priced per tanker-load and the owner's tankers are not all the
+     * same, so the amount is only final once we know which vehicle goes out.
+     *
+     * Returns nothing for an order whose amount was *given* rather than
+     * calculated — an admin typing it by hand, or a standing order carrying
+     * its own figure. Re-pricing those would overwrite the owner's own number,
+     * which is why `amount_fixed` exists.
+     *
+     * @return array<string, float>
+     */
+    private function priceFor(Order $order, Tanker $tanker): array
+    {
+        if ($order->amount_fixed) {
+            return [];
+        }
+
+        return ['order_amount' => $this->pricing->amountFor($order->tanker_count, $tanker)];
     }
 
     public function reassign(
@@ -149,6 +172,9 @@ final class OrderService extends BaseService implements OrderServiceInterface
                     'spot_id' => $spot->id,
                     'refill_charge' => (float) $spot->refill_charge,
                 ]),
+                // A different driver brings a different tanker, which may be
+                // priced differently.
+                ...$this->priceFor($order, $tanker),
                 // `assigned_at` is left alone on purpose: the order was assigned
                 // when it first was, and re-stamping it would tell the reports
                 // this order waited less than it did.

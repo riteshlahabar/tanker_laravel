@@ -12,8 +12,8 @@
     :value="$schedule?->delivery_time ? \Illuminate\Support\Carbon::parse($schedule->delivery_time)->format('H:i') : null"
     help="Use this instead of a window." />
 
-<x-form.text name="quantity_litres" label="Litres per Delivery" type="number"
-    :value="$schedule?->quantity_litres" :attrs="['min' => 1, 'max' => 200000]" />
+<x-form.text name="tanker_count" label="Tankers per Delivery" type="number"
+    :value="$schedule?->tanker_count ?? 1" :attrs="['min' => 1, 'max' => 20]" />
 
 <x-form.text name="order_amount" label="Fixed Amount" type="number" :value="$schedule?->order_amount"
     :attrs="['step' => '0.01', 'min' => 0]" help="Leave empty to use the usual pricing rule." />

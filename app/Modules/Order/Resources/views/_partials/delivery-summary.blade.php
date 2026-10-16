@@ -20,7 +20,7 @@
                 </tr>
                 <tr>
                     <th>Quantity</th>
-                    <td>{{ $order->quantity_litres ? number_format($order->quantity_litres) . ' L' : '—' }}</td>
+                    <td>{{ $order->tanker_count ? $order->tanker_count . ' tanker' . ($order->tanker_count > 1 ? 's' : '') : '—' }}</td>
                 </tr>
                 <tr>
                     <th>Amount</th>

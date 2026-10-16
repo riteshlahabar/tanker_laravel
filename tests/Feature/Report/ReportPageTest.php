@@ -164,7 +164,7 @@ final class ReportPageTest extends TestCase
             'spot_id' => $spot->id,
             'delivery_address' => 'Kothrud, Pune',
             'delivery_date' => now()->toDateString(),
-            'quantity_litres' => 5000,
+            'tanker_count' => 1,
             'order_amount' => 1200,
             'refill_charge' => 400,
             'driver_earning' => 150,

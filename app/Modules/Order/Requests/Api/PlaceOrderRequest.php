@@ -58,7 +58,7 @@ final class PlaceOrderRequest extends FormRequest
                 'nullable', 'integer',
                 Rule::exists('delivery_slots', 'id')->whereNull('deleted_at'),
             ],
-            'quantity_litres' => ['nullable', 'integer', 'min:1', 'max:200000'],
+            'tanker_count' => ['nullable', 'integer', 'min:1', 'max:20'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -72,6 +72,9 @@ final class PlaceOrderRequest extends FormRequest
             ...$this->validated(),
             'customer_id' => $this->user()->id,
             'order_amount' => $amount,
+            // Calculated, not given — so assignment is free to re-price it
+            // from the tanker that actually goes out.
+            'amount_fixed' => false,
         ];
     }
 }

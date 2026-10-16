@@ -191,7 +191,9 @@ final class ReportFiguresTest extends TestCase
         $row = app(TankerUtilisationReport::class)->rows($this->thisMonth())->firstWhere(1, 'MH12AB1234');
 
         $this->assertSame(4, $row[4]);
-        $this->assertSame(20000, $row[5]);
+        // Four deliveries of one tanker each — the column counts tanker-loads
+        // now, not litres.
+        $this->assertSame(4, $row[5]);
         $this->assertSame(4000.0, $row[6]);
     }
 
@@ -228,7 +230,7 @@ final class ReportFiguresTest extends TestCase
                 'driver_earning' => $earning,
                 'order_amount' => $amount,
                 'refill_charge' => 400,
-                'quantity_litres' => 5000,
+                'tanker_count' => 1,
                 'delivered_at' => $deliveredAt ?? now(),
             ]);
         }

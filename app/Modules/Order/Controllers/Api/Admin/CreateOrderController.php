@@ -21,7 +21,7 @@ final class CreateOrderController
 
     public function __invoke(StoreOrderRequest $request): JsonResponse
     {
-        $order = $this->orders->place($request->validated(), $request->user());
+        $order = $this->orders->place($request->orderData(), $request->user());
 
         return ApiResponse::success(
             new OrderResource($order->load(['customer', 'statusLogs.changedBy'])),

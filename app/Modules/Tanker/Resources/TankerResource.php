@@ -24,6 +24,7 @@ final class TankerResource extends JsonResource
             'vehicle_number' => $this->vehicle_number,
             'label' => $this->label(),
             'capacity_litres' => $this->capacity_litres,
+            'tanker_rate' => $this->tanker_rate === null ? null : (float) $this->tanker_rate,
             'model_year' => $this->model_year,
             'rc_number' => $this->rc_number,
             'insurance_expiry' => $this->insurance_expiry?->toDateString(),

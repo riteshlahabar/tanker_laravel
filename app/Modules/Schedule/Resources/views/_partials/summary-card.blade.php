@@ -8,7 +8,7 @@
             <tbody>
                 <tr><th class="ps-0">Pattern</th><td>{{ $schedule->patternLabel() }}</td></tr>
                 <tr><th class="ps-0">Window</th><td>{{ $schedule->slot?->label() ?? $schedule->slotLabel() ?? '—' }}</td></tr>
-                <tr><th class="ps-0">Litres</th><td>{{ $schedule->quantity_litres ?? '—' }}</td></tr>
+                <tr><th class="ps-0">Tankers</th><td>{{ $schedule->tanker_count ?? '—' }}</td></tr>
                 <tr>
                     <th class="ps-0">Amount</th>
                     <td>{{ $schedule->order_amount === null ? 'Usual pricing' : '₹ '.number_format((float) $schedule->order_amount, 2) }}</td>

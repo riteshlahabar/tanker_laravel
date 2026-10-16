@@ -38,9 +38,23 @@ final class StoreOrderRequest extends FormRequest
                 'nullable', 'integer',
                 Rule::exists('delivery_slots', 'id')->whereNull('deleted_at'),
             ],
-            'quantity_litres' => ['nullable', 'integer', 'min:1', 'max:200000'],
+            'tanker_count' => ['nullable', 'integer', 'min:1', 'max:20'],
             'order_amount' => ['required', 'numeric', 'min:0', 'max:9999999.99'],
             'notes' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
+     * The admin types the amount by hand, so it is the figure of record:
+     * `amount_fixed` stops assignment re-pricing it from the vehicle's rate.
+     *
+     * @return array<string, mixed>
+     */
+    public function orderData(): array
+    {
+        return [
+            ...$this->validated(),
+            'amount_fixed' => true,
         ];
     }
 

@@ -30,7 +30,7 @@ final class DeliveryScheduleResource extends JsonResource
             'weekdays' => $this->weekdays,
             'pattern' => $this->patternLabel(),
 
-            'quantity_litres' => $this->quantity_litres,
+            'tanker_count' => $this->tanker_count,
             // Money is a num on the wire — may arrive as an int.
             'order_amount' => $this->order_amount === null ? null : (float) $this->order_amount,
 

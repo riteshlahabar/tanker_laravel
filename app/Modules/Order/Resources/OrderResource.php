@@ -27,7 +27,7 @@ final class OrderResource extends JsonResource
             ...(new OrderListResource($this->resource))->toArray($request),
             'latitude' => $this->latitude === null ? null : (float) $this->latitude,
             'longitude' => $this->longitude === null ? null : (float) $this->longitude,
-            'quantity_litres' => $this->quantity_litres,
+            'tanker_count' => $this->tanker_count,
             'delivery_slot' => $this->delivery_slot,
             'refill_charge' => (float) $this->refill_charge,
             'driver_earning' => (float) $this->driver_earning,

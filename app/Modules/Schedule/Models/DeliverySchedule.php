@@ -31,7 +31,7 @@ class DeliverySchedule extends Model
         'customer_id',
         'interval_days',
         'weekdays',
-        'quantity_litres',
+        'tanker_count',
         'order_amount',
         'delivery_slot_id',
         'delivery_time',
@@ -57,7 +57,7 @@ class DeliverySchedule extends Model
         return [
             'weekdays' => 'array',
             'interval_days' => 'integer',
-            'quantity_litres' => 'integer',
+            'tanker_count' => 'integer',
             'order_amount' => 'decimal:2',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
