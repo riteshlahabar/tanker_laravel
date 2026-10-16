@@ -212,6 +212,28 @@ final class DriverApiTest extends TestCase
         $this->assertEquals(0, $response->json('data.0.distance_km'));
     }
 
+    public function test_the_usable_spot_list_carries_every_field_the_resource_promises(): void
+    {
+        $this->spot->update([
+            'water_type' => 'Borewell',
+            'contact_person' => 'Manoj',
+            'contact_mobile' => '9578123456',
+        ]);
+
+        // Narrowing the query's columns once left these null, and `(bool) null`
+        // had the app marking an available spot as blocked.
+        $this->actingAsApi($this->driver)
+            ->getJson(route('api.spots.index'))
+            ->assertOk()
+            ->assertJsonPath('data.0.is_available', true)
+            ->assertJsonPath('data.0.status', true)
+            ->assertJsonPath('data.0.water_type', 'Borewell')
+            ->assertJsonPath('data.0.contact_person', 'Manoj')
+            ->assertJsonPath('data.0.contact_mobile', '9578123456')
+            ->assertJsonPath('data.0.latitude', 18.5204)
+            ->assertJsonPath('data.0.longitude', 73.8567);
+    }
+
     public function test_nearby_spots_need_coordinates(): void
     {
         $this->actingAsApi($this->driver)

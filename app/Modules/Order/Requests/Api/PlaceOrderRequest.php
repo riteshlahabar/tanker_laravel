@@ -46,7 +46,9 @@ final class PlaceOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'delivery_address' => ['required', 'string', 'max:1000'],
+            // Optional: left out, the customer's own address — the one entered
+            // when the admin added them — is used. See CustomerAddressResolver.
+            'delivery_address' => ['nullable', 'string', 'max:1000'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'delivery_date' => ['required', 'date', 'after_or_equal:today'],

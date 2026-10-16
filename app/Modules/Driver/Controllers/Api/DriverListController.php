@@ -24,7 +24,10 @@ final class DriverListController
 
         return $this->listResponse(
             $this->drivers->scopedQuery()
-                ->with('currentAssignment.tanker:id,vehicle_name,vehicle_number')
+                // Every column the nested TankerResource reads. Narrowing it
+                // to the label's three sent the rest back as null, so the
+                // driver's tanker arrived with no capacity and status false.
+                ->with('currentAssignment.tanker')
                 ->orderBy('first_name'),
             $request,
             DriverResource::class,

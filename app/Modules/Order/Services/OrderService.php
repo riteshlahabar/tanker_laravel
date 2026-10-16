@@ -26,6 +26,7 @@ final class OrderService extends BaseService implements OrderServiceInterface
         private readonly OrderNumberGeneratorInterface $numbers,
         private readonly OrderStatusTransitioner $transitioner,
         private readonly DeliveryAtResolver $deliveryAt,
+        private readonly CustomerAddressResolver $customerAddress,
     ) {}
 
     /**
@@ -38,6 +39,10 @@ final class OrderService extends BaseService implements OrderServiceInterface
         // delivery_at and the six-hour skip check always has something to
         // compare against.
         $data = $this->deliveryAt->apply($data);
+
+        // Same reasoning: where to deliver defaults to the address the admin
+        // entered for the customer, in one place rather than per form.
+        $data = $this->customerAddress->apply($data);
 
         return $this->transaction(function () use ($data, $placedBy): Order {
             $order = $this->orders->store([

@@ -56,6 +56,38 @@ final class CustomerApiTest extends TestCase
         ]);
     }
 
+    public function test_a_booking_defaults_to_the_address_entered_when_the_customer_was_added(): void
+    {
+        $this->customer->update(['latitude' => 18.5074, 'longitude' => 73.8077]);
+
+        $this->actingAsApi($this->customer)
+            ->postJson(route('api.customer.orders.store'), [
+                'delivery_date' => now()->toDateString(),
+                'quantity_litres' => 5000,
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.delivery_address', 'Kothrud, Pune')
+            // Delivering to the registered address, so the driver gets its pin.
+            ->assertJsonPath('data.latitude', 18.5074)
+            ->assertJsonPath('data.longitude', 73.8077);
+    }
+
+    public function test_a_one_off_address_is_kept_and_does_not_borrow_the_customers_coordinates(): void
+    {
+        $this->customer->update(['latitude' => 18.5074, 'longitude' => 73.8077]);
+
+        $this->actingAsApi($this->customer)
+            ->postJson(route('api.customer.orders.store'), [
+                'delivery_address' => 'Site office, Wagholi',
+                'delivery_date' => now()->toDateString(),
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.delivery_address', 'Site office, Wagholi')
+            // The home pin would send the driver to the wrong place.
+            ->assertJsonPath('data.latitude', null)
+            ->assertJsonPath('data.longitude', null);
+    }
+
     public function test_the_order_is_always_placed_for_the_signed_in_customer(): void
     {
         $other = $this->userWithRole(RoleEnum::Customer, ['mobile' => '9444444444']);

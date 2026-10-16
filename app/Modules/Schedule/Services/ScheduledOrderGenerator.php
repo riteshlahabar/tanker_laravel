@@ -188,16 +188,17 @@ final class ScheduledOrderGenerator implements ScheduledOrderGeneratorInterface
 
     private function place(DeliverySchedule $schedule, Carbon $date, User $actor): Order
     {
-        $customer = $schedule->customer;
-
         // delivery_at is resolved inside OrderService::place(), which also
-        // strips delivery_time — so this just describes the delivery.
+        // strips delivery_time — so this just describes the delivery. The same
+        // is now true of where to deliver: a schedule that names no address of
+        // its own falls through to the customer's in CustomerAddressResolver,
+        // so that rule is not repeated here.
         $data = [
             'customer_id' => $schedule->customer_id,
             'delivery_schedule_id' => $schedule->id,
-            'delivery_address' => $schedule->delivery_address ?: $customer?->address,
-            'latitude' => $schedule->latitude ?? $customer?->latitude,
-            'longitude' => $schedule->longitude ?? $customer?->longitude,
+            'delivery_address' => $schedule->delivery_address,
+            'latitude' => $schedule->latitude,
+            'longitude' => $schedule->longitude,
             'delivery_date' => $date->toDateString(),
             'delivery_slot_id' => $schedule->delivery_slot_id,
             'delivery_time' => $schedule->delivery_time,
