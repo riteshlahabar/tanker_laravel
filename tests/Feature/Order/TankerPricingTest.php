@@ -53,7 +53,7 @@ final class TankerPricingTest extends TestCase
         ]);
 
         $this->driver = $this->userWithRole(RoleEnum::Driver, [
-            'mobile' => '9876543210', 'first_name' => 'Ramesh', 'per_delivery_rate' => 150,
+            'mobile' => '9876543210', 'first_name' => 'Ramesh', 'monthly_salary' => 15000,
         ]);
 
         // A larger vehicle, priced above the default.
@@ -147,7 +147,7 @@ final class TankerPricingTest extends TestCase
         $this->assertSame('1500.00', $order->refresh()->order_amount);
 
         $replacement = $this->userWithRole(RoleEnum::Driver, [
-            'mobile' => '9876500000', 'first_name' => 'Suresh', 'per_delivery_rate' => 180,
+            'mobile' => '9876500000', 'first_name' => 'Suresh', 'monthly_salary' => 18000,
         ]);
 
         $this->unpricedTanker->assignments()->create([

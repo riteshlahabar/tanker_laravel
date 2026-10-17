@@ -40,7 +40,7 @@ final class AdminApiTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 'tankers', 'drivers', 'customers',
-                'orders_today', 'pending', 'delivered_today', 'revenue_today', 'driver_earning_today',
+                'orders_today', 'pending', 'delivered_today', 'revenue_today', 'tankers_delivered_today',
             ]]);
     }
 
@@ -148,7 +148,7 @@ final class AdminApiTest extends TestCase
                 'password' => 'driver-pass-1',
                 'password_confirmation' => 'driver-pass-1',
                 'tanker_id' => $tanker->id,
-                'per_delivery_rate' => 150,
+                'monthly_salary' => 15000,
                 'status' => 1,
             ])
             ->assertCreated()
@@ -199,7 +199,7 @@ final class AdminApiTest extends TestCase
             ->putJson(route('api.admin.drivers.update', $customer->id), [
                 'first_name' => 'Hijacked',
                 'mobile' => '9333333333',
-                'per_delivery_rate' => 0,
+                'monthly_salary' => 0,
                 'status' => 1,
             ])
             ->assertNotFound();
@@ -223,7 +223,7 @@ final class AdminApiTest extends TestCase
     {
         $customer = $this->userWithRole(RoleEnum::Customer, ['mobile' => '9333333333']);
         $driver = $this->userWithRole(RoleEnum::Driver, [
-            'first_name' => 'Ramesh', 'last_name' => '', 'mobile' => '9111111111', 'per_delivery_rate' => 150,
+            'first_name' => 'Ramesh', 'last_name' => '', 'mobile' => '9111111111', 'monthly_salary' => 15000,
         ]);
         $tanker = Tanker::query()->create(['vehicle_name' => 'One', 'vehicle_number' => 'MH12AB1234']);
         $tanker->assignments()->create(['driver_id' => $driver->id, 'assigned_from' => now()->toDateString()]);
@@ -239,8 +239,7 @@ final class AdminApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.status', 'assigned')
             ->assertJsonPath('data.driver.full_name', 'Ramesh')
-            ->assertJsonPath('data.refill_charge', 400)
-            ->assertJsonPath('data.driver_earning', 150);
+            ->assertJsonPath('data.refill_charge', 400);
     }
 
     public function test_assigning_a_driver_with_no_tanker_is_refused_with_a_reason(): void
@@ -263,7 +262,7 @@ final class AdminApiTest extends TestCase
             ->assertOk();
 
         $this->assertSame([
-            'driver-earning', 'daily-delivery', 'spot-refill', 'customer-order', 'tanker-utilisation',
+            'driver-salary', 'daily-delivery', 'spot-refill', 'customer-order', 'tanker-utilisation',
             'schedule-adherence',
         ], array_column($response->json('data'), 'key'));
     }
@@ -272,24 +271,26 @@ final class AdminApiTest extends TestCase
     {
         $customer = $this->userWithRole(RoleEnum::Customer, ['mobile' => '9333333333']);
         $driver = $this->userWithRole(RoleEnum::Driver, [
-            'first_name' => 'Ramesh', 'last_name' => '', 'mobile' => '9111111111', 'per_delivery_rate' => 150,
+            'first_name' => 'Ramesh', 'last_name' => '', 'mobile' => '9111111111', 'monthly_salary' => 15000,
         ]);
 
         $this->order($customer, [
             'driver_id' => $driver->id,
             'status' => OrderStatusEnum::Delivered,
             'delivered_at' => now(),
-            'driver_earning' => 150,
         ]);
 
         $this->actingAsApi($this->adminUser)
-            ->getJson(route('api.admin.reports.show', ['report' => 'driver-earning']))
+            ->getJson(route('api.admin.reports.show', ['report' => 'driver-salary']))
             ->assertOk()
-            ->assertJsonPath('data.key', 'driver-earning')
-            ->assertJsonPath('data.title', 'Driver Delivery & Earning')
+            ->assertJsonPath('data.key', 'driver-salary')
+            ->assertJsonPath('data.title', 'Driver Deliveries & Salary')
             ->assertJsonPath('data.headings.0', 'Driver')
             ->assertJsonPath('data.rows.0.0', 'Ramesh')
-            ->assertJsonPath('data.totals.Total earning', '₹ 150.00');
+            ->assertJsonPath('data.totals.Tankers delivered', '1')
+            // The salary total is the monthly figure, never divided across the
+            // range, and its label has to say so.
+            ->assertJsonPath('data.totals.Salary per month (not for the range)', '₹ 15,000.00');
     }
 
     public function test_an_unknown_report_is_not_found(): void
@@ -331,7 +332,7 @@ final class AdminApiTest extends TestCase
             ->getJson(route('api.admin.settings.show'))
             ->assertOk()
             ->assertJsonStructure(['data' => [
-                'company_name', 'admin_whatsapp_number', 'default_driver_rate',
+                'company_name', 'admin_whatsapp_number', 'default_monthly_salary',
                 'default_order_amount', 'price_per_tanker', 'daily_report_time',
             ]]);
     }
@@ -342,7 +343,7 @@ final class AdminApiTest extends TestCase
             ->putJson(route('api.admin.settings.update'), [
                 'company_name' => 'Tanker Co',
                 'admin_whatsapp_number' => '919812345678',
-                'default_driver_rate' => 175,
+                'default_monthly_salary' => 17500,
                 'default_order_amount' => 1000,
                 'price_per_tanker' => 1200,
                 'daily_report_time' => '23:59',
@@ -357,7 +358,7 @@ final class AdminApiTest extends TestCase
         $this->actingAsApi($this->adminUser)
             ->putJson(route('api.admin.settings.update'), ['company_name' => ''])
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['company_name', 'default_driver_rate']);
+            ->assertJsonValidationErrors(['company_name', 'default_monthly_salary']);
     }
 
     public function test_every_api_endpoint_rejects_an_anonymous_request(): void

@@ -41,7 +41,7 @@ class User extends Authenticatable
         'address',
         'latitude',
         'longitude',
-        'per_delivery_rate',
+        'monthly_salary',
         'can_self_order',
         'status',
     ];
@@ -65,7 +65,7 @@ class User extends Authenticatable
             'status' => 'boolean',
             'can_self_order' => 'boolean',
             'system_reserve' => 'boolean',
-            'per_delivery_rate' => 'decimal:2',
+            'monthly_salary' => 'decimal:2',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
         ];
@@ -99,7 +99,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Orders this driver was given — the base for the earning report's
+     * Orders this driver was given — the base for the driver report's
      * aggregates.
      */
     public function deliveredOrders(): HasMany

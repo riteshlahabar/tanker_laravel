@@ -56,7 +56,7 @@ final class DriverCrudTest extends TestCase
                 'password' => 'driver-pass-1',
                 'password_confirmation' => 'driver-pass-1',
                 'tanker_id' => $tanker->id,
-                'per_delivery_rate' => 150,
+                'monthly_salary' => 15000,
                 'status' => 1,
             ])
             ->assertRedirect(route('admin.driver.index'));
@@ -139,7 +139,7 @@ final class DriverCrudTest extends TestCase
             ->put(route('admin.driver.update', $driver), [
                 'first_name' => 'Renamed',
                 'mobile' => '9876543210',
-                'per_delivery_rate' => 200,
+                'monthly_salary' => 20000,
                 'password' => '',
                 'status' => 1,
             ])

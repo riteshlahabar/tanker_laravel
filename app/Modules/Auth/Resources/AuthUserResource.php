@@ -31,6 +31,10 @@ final class AuthUserResource extends JsonResource
             'role' => $this->roleName(),
             'status' => (bool) $this->status,
             'can_self_order' => $this->canSelfOrder(),
+            // Only a driver is salaried, and the app shows this on their own
+            // profile screen — which is shared with the other two roles, so it
+            // has to be able to tell "not a driver" from "a driver paid zero".
+            'monthly_salary' => $this->isDriver() ? (float) $this->monthly_salary : null,
         ];
     }
 }

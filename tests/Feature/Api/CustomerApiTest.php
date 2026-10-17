@@ -241,20 +241,20 @@ final class CustomerApiTest extends TestCase
         $this->assertSame('New Address, Pune', $this->customer->refresh()->address);
     }
 
-    public function test_the_profile_endpoint_cannot_change_the_mobile_or_rate(): void
+    public function test_the_profile_endpoint_cannot_change_the_mobile_or_salary(): void
     {
         $this->actingAsApi($this->customer)
             ->putJson(route('api.auth.profile.update'), [
                 'first_name' => 'Sunita',
                 'mobile' => '9999999999',
-                'per_delivery_rate' => 9999,
+                'monthly_salary' => 9999,
             ])
             ->assertOk();
 
         $this->customer->refresh();
 
         $this->assertSame('9333333333', $this->customer->mobile);
-        $this->assertSame('0.00', $this->customer->per_delivery_rate);
+        $this->assertSame('0.00', $this->customer->monthly_salary);
     }
 
     /**

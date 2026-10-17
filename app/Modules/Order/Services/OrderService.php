@@ -92,9 +92,10 @@ final class OrderService extends BaseService implements OrderServiceInterface
                 'driver_id' => $driver->id,
                 'tanker_id' => $tanker->id,
                 'spot_id' => $spot?->id,
-                // Snapshots, so later rate or charge changes never rewrite history.
+                // Snapshot, so a later charge change never rewrites history.
+                // The driver's pay is not snapshotted: a monthly salary is not
+                // earned per order, so there is nothing per-order to record.
                 'refill_charge' => (float) ($spot?->refill_charge ?? 0),
-                'driver_earning' => (float) $driver->per_delivery_rate,
                 ...$this->priceFor($order, $tanker),
             ],
         ));
@@ -133,7 +134,7 @@ final class OrderService extends BaseService implements OrderServiceInterface
 
         // Deliberately narrower than "any open status": once the driver starts
         // refilling, the water has been bought against them, so the delivery
-        // and its earning stay where they are.
+        // stays where it is.
         if ($order->status !== OrderStatusEnum::Assigned) {
             throw OrderAssignmentException::notReassignable($order->status);
         }
@@ -163,9 +164,6 @@ final class OrderService extends BaseService implements OrderServiceInterface
             $order->update([
                 'driver_id' => $driver->id,
                 'tanker_id' => $tanker->id,
-                // The new driver's rate, since they make the delivery — the old
-                // snapshot would pay one driver at another's rate.
-                'driver_earning' => (float) $driver->per_delivery_rate,
                 // The spot is only re-snapshotted when a new one is named;
                 // keeping the original is right when only the driver changed.
                 ...($spot === null ? [] : [

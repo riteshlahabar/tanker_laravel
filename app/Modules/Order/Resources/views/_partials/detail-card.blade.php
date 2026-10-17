@@ -43,10 +43,6 @@
                             @endif
                         </td>
                     </tr>
-                    <tr>
-                        <th>Driver earning</th>
-                        <td>₹ {{ number_format((float) $order->driver_earning, 2) }}</td>
-                    </tr>
                     @if ($order->cancel_reason)
                         <tr>
                             <th>Cancelled because</th>

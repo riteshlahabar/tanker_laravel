@@ -31,7 +31,7 @@ final class DailyDeliveryReport implements ReportInterface
      */
     public function headings(): array
     {
-        return ['Date', 'Orders', 'Delivered', 'Cancelled', 'Revenue', 'Refill Cost', 'Driver Earning'];
+        return ['Date', 'Orders', 'Delivered', 'Cancelled', 'Revenue', 'Refill Cost', 'Tankers'];
     }
 
     /**
@@ -62,7 +62,7 @@ final class DailyDeliveryReport implements ReportInterface
                     (int) ($p?->cancelled ?? 0),
                     (float) ($d?->revenue ?? 0),
                     (float) ($d?->refill_cost ?? 0),
-                    (float) ($d?->driver_earning ?? 0),
+                    (int) ($d?->loads ?? 0),
                 ];
             })
             ->values();
@@ -80,7 +80,7 @@ final class DailyDeliveryReport implements ReportInterface
             'Delivered' => number_format((float) $rows->sum(2)),
             'Cancelled' => number_format((float) $rows->sum(3)),
             'Revenue' => '₹ '.number_format((float) $rows->sum(4), 2),
-            'Driver earning' => '₹ '.number_format((float) $rows->sum(6), 2),
+            'Tankers delivered' => number_format((float) $rows->sum(6)),
         ];
     }
 
@@ -106,7 +106,7 @@ final class DailyDeliveryReport implements ReportInterface
     {
         return Order::query()
             ->selectRaw('date(delivered_at) as day, count(*) as delivered')
-            ->selectRaw('sum(order_amount) as revenue, sum(refill_charge) as refill_cost, sum(driver_earning) as driver_earning')
+            ->selectRaw('sum(order_amount) as revenue, sum(refill_charge) as refill_cost, sum(tanker_count) as loads')
             ->where('status', OrderStatusEnum::Delivered)
             ->whereBetween('delivered_at', [$filters->fromDateTime(), $filters->toDateTime()])
             ->groupByRaw('date(delivered_at)')

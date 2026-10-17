@@ -36,7 +36,7 @@ final class DriverApiTest extends TestCase
 
         $this->driver = $this->userWithRole(RoleEnum::Driver, [
             'first_name' => 'Ramesh', 'last_name' => '', 'mobile' => '9111111111',
-            'per_delivery_rate' => 150,
+            'monthly_salary' => 15000,
         ]);
         $this->customer = $this->userWithRole(RoleEnum::Customer, [
             'first_name' => 'Sunita', 'last_name' => '', 'mobile' => '9333333333',
@@ -60,7 +60,7 @@ final class DriverApiTest extends TestCase
     public function test_the_summary_gives_the_driver_their_tanker_and_todays_numbers(): void
     {
         $this->order(['status' => OrderStatusEnum::Assigned]);
-        $this->order(['status' => OrderStatusEnum::Delivered, 'delivered_at' => now(), 'driver_earning' => 150]);
+        $this->order(['status' => OrderStatusEnum::Delivered, 'delivered_at' => now()]);
 
         $this->actingAsApi($this->driver)
             ->getJson(route('api.driver.summary'))
@@ -69,7 +69,8 @@ final class DriverApiTest extends TestCase
             ->assertJsonPath('data.driver.tanker.vehicle_number', 'MH12AB1234')
             ->assertJsonPath('data.today.assigned', 1)
             ->assertJsonPath('data.today.delivered', 1)
-            ->assertJsonPath('data.today.earning', 150);
+            // Tanker-loads, not money: a salaried driver earns nothing per order.
+            ->assertJsonPath('data.today.tankers', 1);
     }
 
     public function test_a_driver_sees_only_their_own_orders(): void
@@ -173,26 +174,26 @@ final class DriverApiTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_earnings_cover_the_range_and_today(): void
+    public function test_salary_and_delivery_figures_cover_the_range_and_today(): void
     {
-        $this->order(['status' => OrderStatusEnum::Delivered, 'delivered_at' => now(), 'driver_earning' => 150]);
-        $this->order(['status' => OrderStatusEnum::Delivered, 'delivered_at' => now(), 'driver_earning' => 150]);
-        $this->order([
-            'status' => OrderStatusEnum::Delivered,
-            'delivered_at' => now()->subDays(10),
-            'driver_earning' => 150,
-        ]);
+        $this->order(['status' => OrderStatusEnum::Delivered, 'delivered_at' => now()]);
+        $this->order(['status' => OrderStatusEnum::Delivered, 'delivered_at' => now(), 'tanker_count' => 2]);
+        $this->order(['status' => OrderStatusEnum::Delivered, 'delivered_at' => now()->subDays(10)]);
 
         $this->actingAsApi($this->driver)
-            ->getJson(route('api.driver.earnings', [
+            ->getJson(route('api.driver.salary', [
                 'from' => now()->subDays(30)->toDateString(),
                 'to' => now()->toDateString(),
             ]))
             ->assertOk()
+            // The salary sits outside the range blocks: it is a monthly figure
+            // and must not be prorated to whatever dates were asked for.
+            ->assertJsonPath('data.monthly_salary', 15000)
             ->assertJsonPath('data.range.delivered', 3)
-            ->assertJsonPath('data.range.earning', 450)
+            ->assertJsonPath('data.range.tankers', 4)
             ->assertJsonPath('data.today.delivered', 2)
-            ->assertJsonPath('data.today.earning', 300);
+            ->assertJsonPath('data.today.tankers', 3)
+            ->assertJsonMissingPath('data.range.earning');
     }
 
     public function test_nearest_spots_come_back_closest_first_with_a_distance(): void
@@ -248,7 +249,7 @@ final class DriverApiTest extends TestCase
         $this->actingAsApi($this->driver)->getJson(route('api.admin.orders.index'))->assertForbidden();
         $this->actingAsApi($this->driver)->getJson(route('api.admin.drivers.index'))->assertForbidden();
         $this->actingAsApi($this->driver)
-            ->getJson(route('api.admin.reports.show', ['report' => 'driver-earning']))
+            ->getJson(route('api.admin.reports.show', ['report' => 'driver-salary']))
             ->assertForbidden();
     }
 

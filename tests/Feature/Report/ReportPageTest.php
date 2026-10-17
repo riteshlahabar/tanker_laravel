@@ -9,7 +9,7 @@ use App\Modules\Core\Enums\OrderStatusEnum;
 use App\Modules\Core\Enums\RoleEnum;
 use App\Modules\Order\Models\Order;
 use App\Modules\Report\Contracts\ReportRegistryInterface;
-use App\Modules\Report\Reports\DriverEarningReport;
+use App\Modules\Report\Reports\DriverSalaryReport;
 use App\Modules\Report\Support\ReportFilters;
 use App\Modules\Spot\Models\Spot;
 use App\Modules\Tanker\Models\Tanker;
@@ -26,7 +26,7 @@ final class ReportPageTest extends TestCase
      * @var array<int, string>
      */
     private const REPORTS = [
-        'driver-earning', 'daily-delivery', 'spot-refill', 'customer-order', 'tanker-utilisation',
+        'driver-salary', 'daily-delivery', 'spot-refill', 'customer-order', 'tanker-utilisation',
         'schedule-adherence',
     ];
 
@@ -84,7 +84,7 @@ final class ReportPageTest extends TestCase
     public function test_the_date_range_defaults_to_this_month(): void
     {
         $this->actingAs($this->adminUser)
-            ->get(route('admin.report.driver-earning'))
+            ->get(route('admin.report.driver-salary'))
             ->assertOk()
             ->assertSee(now()->startOfMonth()->toDateString())
             ->assertSee(now()->toDateString());
@@ -100,12 +100,12 @@ final class ReportPageTest extends TestCase
         // Unfiltered, both drivers are listed; the filter leaves one. The name
         // still appears in the filter dropdown either way, so the "Drivers"
         // total is what proves the rows were narrowed.
-        $unfiltered = app(DriverEarningReport::class)
+        $unfiltered = app(DriverSalaryReport::class)
             ->rows(ReportFilters::forDay(now()->toDateString()));
         $this->assertCount(2, $unfiltered);
 
         $this->actingAs($this->adminUser)
-            ->get(route('admin.report.driver-earning', ['driver_id' => $driver->id]))
+            ->get(route('admin.report.driver-salary', ['driver_id' => $driver->id]))
             ->assertOk()
             ->assertSee('Ramesh')
             ->assertSeeInOrder(['Drivers', '>1<'], false);
@@ -116,7 +116,7 @@ final class ReportPageTest extends TestCase
         [$driver] = $this->seedOneDelivery();
 
         $this->actingAs($this->adminUser)
-            ->get(route('admin.report.driver-earning', [
+            ->get(route('admin.report.driver-salary', [
                 'from' => '2026-01-01', 'to' => '2026-01-31', 'driver_id' => $driver->id,
             ]))
             ->assertOk()
@@ -133,13 +133,13 @@ final class ReportPageTest extends TestCase
         }
 
         $this->actingAs($driver)
-            ->get(route('admin.report.export', ['report' => 'driver-earning']))
+            ->get(route('admin.report.export', ['report' => 'driver-salary']))
             ->assertForbidden();
     }
 
     public function test_reports_require_a_login(): void
     {
-        $this->get(route('admin.report.driver-earning'))->assertRedirect(route('login'));
+        $this->get(route('admin.report.driver-salary'))->assertRedirect(route('login'));
     }
 
     /**
@@ -148,7 +148,7 @@ final class ReportPageTest extends TestCase
     private function seedOneDelivery(): array
     {
         $driver = $this->userWithRole(RoleEnum::Driver, [
-            'first_name' => 'Ramesh', 'last_name' => '', 'mobile' => '9111111111', 'per_delivery_rate' => 150,
+            'first_name' => 'Ramesh', 'last_name' => '', 'mobile' => '9111111111', 'monthly_salary' => 15000,
         ]);
         $customer = $this->userWithRole(RoleEnum::Customer, [
             'first_name' => 'Sunita', 'last_name' => '', 'mobile' => '9333333333',
@@ -167,7 +167,6 @@ final class ReportPageTest extends TestCase
             'tanker_count' => 1,
             'order_amount' => 1200,
             'refill_charge' => 400,
-            'driver_earning' => 150,
             'status' => OrderStatusEnum::Delivered,
             'delivered_at' => now(),
         ]);

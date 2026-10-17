@@ -36,7 +36,7 @@ final class DriverExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
      */
     public function headings(): array
     {
-        return ['Driver', 'Mobile', 'Assigned Tanker', 'Rate per Delivery', 'Address', 'Status'];
+        return ['Driver', 'Mobile', 'Assigned Tanker', 'Monthly Salary', 'Address', 'Status'];
     }
 
     /**
@@ -49,7 +49,7 @@ final class DriverExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
             $row->full_name,
             $row->mobile,
             $row->currentAssignment?->tanker?->label(),
-            (float) $row->per_delivery_rate,
+            (float) $row->monthly_salary,
             $row->address,
             $row->status ? 'Active' : 'Inactive',
         ];

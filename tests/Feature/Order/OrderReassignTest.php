@@ -57,11 +57,11 @@ final class OrderReassignTest extends TestCase
         ]);
 
         $this->ramesh = $this->userWithRole(RoleEnum::Driver, [
-            'mobile' => '9876543210', 'first_name' => 'Ramesh', 'per_delivery_rate' => 150,
+            'mobile' => '9876543210', 'first_name' => 'Ramesh', 'monthly_salary' => 15000,
         ]);
 
         $this->suresh = $this->userWithRole(RoleEnum::Driver, [
-            'mobile' => '9876500000', 'first_name' => 'Suresh', 'per_delivery_rate' => 180,
+            'mobile' => '9876500000', 'first_name' => 'Suresh', 'monthly_salary' => 18000,
         ]);
 
         $this->firstTanker = Tanker::query()->create([
@@ -100,8 +100,9 @@ final class OrderReassignTest extends TestCase
         $this->assertSame($this->suresh->id, $order->driver_id);
         // The new driver's own tanker travels with them.
         $this->assertSame($this->secondTanker->id, $order->tanker_id);
-        // And their own rate, or the delivery would pay one driver at another's.
-        $this->assertSame('180.00', $order->driver_earning);
+        // No pay travels with the handover: a salary is monthly, so there is
+        // nothing per-order to move from one driver to the other.
+        $this->assertArrayNotHasKey('driver_earning', $order->getAttributes());
         // The status has not moved: it is still assigned, just to somebody else.
         $this->assertSame(OrderStatusEnum::Assigned, $order->status);
         // Re-stamping this would tell the reports the order waited less than it did.
@@ -174,7 +175,7 @@ final class OrderReassignTest extends TestCase
         $order = $this->assignedOrder();
 
         $tankerless = $this->userWithRole(RoleEnum::Driver, [
-            'mobile' => '9000000001', 'first_name' => 'Mahesh', 'per_delivery_rate' => 120,
+            'mobile' => '9000000001', 'first_name' => 'Mahesh', 'monthly_salary' => 12000,
         ]);
 
         $this->expectException(OrderAssignmentException::class);

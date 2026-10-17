@@ -10,9 +10,10 @@
 <x-form.select name="tanker_id" label="Assign Tanker" :value="$currentTankerId ?? null" :options="$tankerOptions"
     placeholder="— No tanker —" help="Only tankers not already assigned to another driver are listed." />
 
-<x-form.text name="per_delivery_rate" label="Earning per Delivery (₹)" type="number"
-    :value="$driver?->per_delivery_rate ?? ($defaultRate ?? 150)"
-    help="Used for the daily driver earning report." :attrs="['step' => '0.01', 'min' => 0]" required />
+<x-form.text name="monthly_salary" label="Monthly Salary (₹)" type="number"
+    :value="$driver?->monthly_salary ?? ($defaultSalary ?? 15000)"
+    help="What this driver is paid each month. Not divided across deliveries."
+    :attrs="['step' => '0.01', 'min' => 0]" required />
 
 <x-form.status :value="$driver?->status ?? true" />
 

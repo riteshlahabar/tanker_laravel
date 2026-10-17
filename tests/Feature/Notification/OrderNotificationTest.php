@@ -52,7 +52,7 @@ final class OrderNotificationTest extends TestCase
         ]);
         $this->driver = $this->userWithRole(RoleEnum::Driver, [
             'first_name' => 'Ramesh', 'last_name' => '', 'mobile' => self::DRIVER_NUMBER,
-            'per_delivery_rate' => 150,
+            'monthly_salary' => 15000,
         ]);
 
         $tanker = Tanker::query()->create(['vehicle_name' => 'One', 'vehicle_number' => 'MH12AB1234']);

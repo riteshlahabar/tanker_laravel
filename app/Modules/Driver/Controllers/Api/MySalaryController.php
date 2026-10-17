@@ -12,10 +12,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 /**
- * The driver's own earnings over a range, plus today's figures for the home
- * screen. Computed from the same snapshots the owner's report uses.
+ * The driver's own delivery figures over a range, plus today's, and the salary
+ * they are paid.
+ *
+ * `monthly_salary` sits outside the range blocks on purpose: it is a monthly
+ * figure and dividing it by an arbitrary date range would produce something
+ * that reads like a cost per delivery and is wrong for any range that is not
+ * exactly a month.
  */
-final class MyEarningsController
+final class MySalaryController
 {
     public function __invoke(Request $request): JsonResponse
     {
@@ -24,19 +29,22 @@ final class MyEarningsController
             'to' => ['nullable', 'date', 'after_or_equal:from'],
         ]);
 
+        $driver = $request->user();
+
         $from = $request->date('from')?->toDateString() ?? Carbon::now()->startOfMonth()->toDateString();
         $to = $request->date('to')?->toDateString() ?? Carbon::now()->toDateString();
 
         return ApiResponse::success([
+            'monthly_salary' => (float) $driver->monthly_salary,
             'from' => $from,
             'to' => $to,
-            'range' => $this->totals($request->user()->id, $from, $to),
-            'today' => $this->totals($request->user()->id, now()->toDateString(), now()->toDateString()),
+            'range' => $this->totals($driver->id, $from, $to),
+            'today' => $this->totals($driver->id, now()->toDateString(), now()->toDateString()),
         ]);
     }
 
     /**
-     * @return array{delivered: int, earning: float, order_value: float}
+     * @return array{delivered: int, tankers: int, order_value: float}
      */
     private function totals(int $driverId, string $from, string $to): array
     {
@@ -47,7 +55,7 @@ final class MyEarningsController
 
         return [
             'delivered' => (int) $query->clone()->count(),
-            'earning' => (float) $query->clone()->sum('driver_earning'),
+            'tankers' => (int) $query->clone()->sum('tanker_count'),
             'order_value' => (float) $query->clone()->sum('order_amount'),
         ];
     }

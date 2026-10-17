@@ -52,7 +52,7 @@ final class OrderExport implements FromQuery, ShouldAutoSize, WithHeadings, With
     {
         return [
             'Order No', 'Customer', 'Mobile', 'Delivery Address', 'Delivery Date', 'Tankers',
-            'Amount', 'Driver', 'Tanker', 'Refill Spot', 'Refill Charge', 'Driver Earning',
+            'Amount', 'Driver', 'Tanker', 'Refill Spot', 'Refill Charge',
             'Status', 'Delivered At',
         ];
     }
@@ -75,7 +75,6 @@ final class OrderExport implements FromQuery, ShouldAutoSize, WithHeadings, With
             $row->tanker?->vehicle_number,
             $row->spot?->name,
             (float) $row->refill_charge,
-            (float) $row->driver_earning,
             $row->status->label(),
             $row->delivered_at?->format('d-m-Y H:i'),
         ];

@@ -4,8 +4,10 @@
     :value="$settings['admin_whatsapp_number'] ?? ''" placeholder="919812345678"
     help="With country code, digits only. All owner notifications and the daily report go here." />
 
-<x-form.text name="default_driver_rate" label="Default Driver Rate (₹ per delivery)" type="number"
-    :value="$settings['default_driver_rate'] ?? 150" :attrs="['step' => '0.01', 'min' => 0]" required />
+<x-form.text name="default_monthly_salary" label="Default Monthly Salary (₹)" type="number"
+    :value="$settings['default_monthly_salary'] ?? 15000"
+    help="Pre-filled on a new driver. Each driver's own salary is set on their form."
+    :attrs="['step' => '0.01', 'min' => 0]" required />
 
 <x-form.text name="default_order_amount" label="Default Order Amount (₹)" type="number"
     :value="$settings['default_order_amount'] ?? 0" help="Flat price per delivery. Pre-filled on a new order."

@@ -30,7 +30,6 @@ final class OrderResource extends JsonResource
             'tanker_count' => $this->tanker_count,
             'delivery_slot' => $this->delivery_slot,
             'refill_charge' => (float) $this->refill_charge,
-            'driver_earning' => (float) $this->driver_earning,
             'notes' => $this->notes,
             'cancel_reason' => $this->cancel_reason,
             // So a detail screen can say "this came from a routine". The app

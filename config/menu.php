@@ -56,7 +56,7 @@ return [
         'title' => 'Reports',
         'icon' => 'reports',
         'children' => [
-            ['title' => 'Driver Earnings', 'route' => 'admin.report.driver-earning'],
+            ['title' => 'Driver Salary', 'route' => 'admin.report.driver-salary'],
             ['title' => 'Daily Delivery', 'route' => 'admin.report.daily-delivery'],
             ['title' => 'Spot Refills', 'route' => 'admin.report.spot-refill'],
             ['title' => 'Customer Orders', 'route' => 'admin.report.customer-order'],

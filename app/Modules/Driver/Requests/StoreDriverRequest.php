@@ -28,7 +28,7 @@ class StoreDriverRequest extends FormRequest
             'mobile' => ['required', 'string', 'max:20', 'regex:/^[0-9]{10,15}$/', $this->uniqueMobile()],
             'password' => $this->passwordRules(),
             'tanker_id' => ['nullable', 'integer', Rule::exists('tankers', 'id')->whereNull('deleted_at')],
-            'per_delivery_rate' => ['required', 'numeric', 'min:0', 'max:999999.99'],
+            'monthly_salary' => ['required', 'numeric', 'min:0', 'max:9999999.99'],
             'address' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', 'boolean'],
         ];

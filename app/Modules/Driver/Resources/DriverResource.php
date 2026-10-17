@@ -26,7 +26,7 @@ final class DriverResource extends JsonResource
             'full_name' => $this->full_name,
             'mobile' => $this->mobile,
             'address' => $this->address,
-            'per_delivery_rate' => (float) $this->per_delivery_rate,
+            'monthly_salary' => (float) $this->monthly_salary,
             'status' => (bool) $this->status,
             'tanker' => $this->currentAssignment?->tanker
                 ? new TankerResource($this->currentAssignment->tanker)

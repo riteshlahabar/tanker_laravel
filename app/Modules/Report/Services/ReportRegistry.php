@@ -8,7 +8,7 @@ use App\Modules\Report\Contracts\ReportInterface;
 use App\Modules\Report\Contracts\ReportRegistryInterface;
 use App\Modules\Report\Reports\CustomerOrderReport;
 use App\Modules\Report\Reports\DailyDeliveryReport;
-use App\Modules\Report\Reports\DriverEarningReport;
+use App\Modules\Report\Reports\DriverSalaryReport;
 use App\Modules\Report\Reports\ScheduleAdherenceReport;
 use App\Modules\Report\Reports\SpotRefillReport;
 use App\Modules\Report\Reports\TankerUtilisationReport;
@@ -24,7 +24,7 @@ final class ReportRegistry implements ReportRegistryInterface
      * @var array<int, class-string<ReportInterface>>
      */
     private const REPORTS = [
-        DriverEarningReport::class,
+        DriverSalaryReport::class,
         DailyDeliveryReport::class,
         SpotRefillReport::class,
         CustomerOrderReport::class,

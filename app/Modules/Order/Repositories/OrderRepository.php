@@ -55,7 +55,9 @@ final class OrderRepository extends BaseRepository implements OrderRepositoryInt
             'pending' => (int) ($counts[OrderStatusEnum::Pending->value]->total ?? 0),
             'delivered_today' => (int) $delivered->clone()->count(),
             'revenue_today' => (float) $delivered->clone()->sum('order_amount'),
-            'driver_earning_today' => (float) $delivered->clone()->sum('driver_earning'),
+            // Tanker-loads rather than driver pay: drivers are salaried, so a
+            // daily figure of a monthly cost would mean nothing.
+            'tankers_delivered_today' => (int) $delivered->clone()->sum('tanker_count'),
         ];
     }
 }

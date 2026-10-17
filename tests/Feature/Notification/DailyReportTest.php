@@ -44,28 +44,28 @@ final class DailyReportTest extends TestCase
         ]);
     }
 
-    public function test_the_report_lists_each_driver_with_their_count_and_earning(): void
+    public function test_the_report_lists_each_driver_with_their_delivery_counts(): void
     {
-        $ramesh = $this->driver('Ramesh', '9111111111', 150);
-        $suresh = $this->driver('Suresh', '9222222222', 200);
+        $ramesh = $this->driver('Ramesh', '9111111111', 15000);
+        $suresh = $this->driver('Suresh', '9222222222', 20000);
 
-        $this->delivered($ramesh, 3, 150);
-        $this->delivered($suresh, 1, 200);
+        $this->delivered($ramesh, 3);
+        $this->delivered($suresh, 1);
 
         $body = app(DailyReportNotifier::class)->sendFor(now()->toDateString())['body'];
 
-        $this->assertStringContainsString('Ramesh: 3 tankers, ₹450.00', $body);
-        $this->assertStringContainsString('Suresh: 1 tanker, ₹200.00', $body);
-        $this->assertStringContainsString('Total delivered: 4', $body);
-        $this->assertStringContainsString('Total earning: ₹ 650.00', $body);
+        $this->assertStringContainsString('Ramesh: 3 deliveries, 3 tankers', $body);
+        $this->assertStringContainsString('Suresh: 1 delivery, 1 tanker', $body);
+        $this->assertStringContainsString('Total deliveries: 4', $body);
+        $this->assertStringContainsString('Tankers delivered: 4', $body);
     }
 
     public function test_drivers_who_delivered_nothing_are_left_out(): void
     {
-        $ramesh = $this->driver('Ramesh', '9111111111', 150);
-        $this->driver('Idle', '9222222222', 200);
+        $ramesh = $this->driver('Ramesh', '9111111111', 15000);
+        $this->driver('Idle', '9222222222', 20000);
 
-        $this->delivered($ramesh, 1, 150);
+        $this->delivered($ramesh, 1);
 
         $body = app(DailyReportNotifier::class)->sendFor(now()->toDateString())['body'];
 
@@ -75,34 +75,34 @@ final class DailyReportTest extends TestCase
 
     public function test_a_day_with_no_deliveries_still_sends_a_report(): void
     {
-        $this->driver('Ramesh', '9111111111', 150);
+        $this->driver('Ramesh', '9111111111', 15000);
 
         $result = app(DailyReportNotifier::class)->sendFor(now()->toDateString());
 
         $this->assertSame(1, $result['queued']);
         $this->assertStringContainsString('No deliveries today.', $result['body']);
-        $this->assertStringContainsString('Total delivered: 0', $result['body']);
+        $this->assertStringContainsString('Total deliveries: 0', $result['body']);
     }
 
     public function test_the_report_only_counts_the_day_asked_for(): void
     {
-        $ramesh = $this->driver('Ramesh', '9111111111', 150);
+        $ramesh = $this->driver('Ramesh', '9111111111', 15000);
 
-        $this->delivered($ramesh, 2, 150);
-        $this->delivered($ramesh, 5, 150, now()->subDays(3));
+        $this->delivered($ramesh, 2);
+        $this->delivered($ramesh, 5, now()->subDays(3));
 
         $today = app(DailyReportNotifier::class)->sendFor(now()->toDateString())['body'];
-        $this->assertStringContainsString('Total delivered: 2', $today);
+        $this->assertStringContainsString('Total deliveries: 2', $today);
 
         $thatDay = app(DailyReportNotifier::class)
             ->sendFor(now()->subDays(3)->toDateString())['body'];
-        $this->assertStringContainsString('Total delivered: 5', $thatDay);
+        $this->assertStringContainsString('Total deliveries: 5', $thatDay);
     }
 
     public function test_the_command_queues_the_report_to_the_owner(): void
     {
-        $ramesh = $this->driver('Ramesh', '9111111111', 150);
-        $this->delivered($ramesh, 2, 150);
+        $ramesh = $this->driver('Ramesh', '9111111111', 15000);
+        $this->delivered($ramesh, 2);
 
         $this->artisan('tanker:daily-report')
             ->expectsOutputToContain('queued to '.self::ADMIN_NUMBER)
@@ -111,7 +111,7 @@ final class DailyReportTest extends TestCase
         $message = WhatsappMessage::query()->where('template', 'report.daily')->firstOrFail();
 
         $this->assertSame(self::ADMIN_NUMBER, $message->to);
-        $this->assertStringContainsString('Ramesh: 2 tankers, ₹300.00', (string) $message->body);
+        $this->assertStringContainsString('Ramesh: 2 deliveries, 2 tankers', (string) $message->body);
     }
 
     public function test_the_command_fails_loudly_when_no_owner_number_is_set(): void
@@ -127,36 +127,36 @@ final class DailyReportTest extends TestCase
 
     public function test_the_command_accepts_a_date(): void
     {
-        $ramesh = $this->driver('Ramesh', '9111111111', 150);
-        $this->delivered($ramesh, 4, 150, now()->subDays(2));
+        $ramesh = $this->driver('Ramesh', '9111111111', 15000);
+        $this->delivered($ramesh, 4, now()->subDays(2));
 
         $this->artisan('tanker:daily-report', ['--date' => now()->subDays(2)->toDateString()])
             ->assertSuccessful();
 
         $this->assertStringContainsString(
-            'Total delivered: 4',
+            'Total deliveries: 4',
             (string) WhatsappMessage::query()->latest('id')->firstOrFail()->body,
         );
     }
 
     public function test_the_send_now_button_queues_the_same_report(): void
     {
-        $ramesh = $this->driver('Ramesh', '9111111111', 150);
-        $this->delivered($ramesh, 2, 150);
+        $ramesh = $this->driver('Ramesh', '9111111111', 15000);
+        $this->delivered($ramesh, 2);
 
         $this->actingAs($this->adminUser)
             ->post(route('admin.whatsapp.daily-report'), ['date' => now()->toDateString()])
             ->assertSessionHas('success');
 
         $this->assertStringContainsString(
-            'Ramesh: 2 tankers',
+            'Ramesh: 2 deliveries',
             (string) WhatsappMessage::query()->where('template', 'report.daily')->firstOrFail()->body,
         );
     }
 
     public function test_a_driver_cannot_trigger_the_report_or_read_the_log(): void
     {
-        $driver = $this->driver('Ramesh', '9111111111', 150);
+        $driver = $this->driver('Ramesh', '9111111111', 15000);
 
         $this->actingAs($driver)->get(route('admin.whatsapp.index'))->assertForbidden();
         $this->actingAs($driver)->post(route('admin.whatsapp.daily-report'))->assertForbidden();
@@ -179,15 +179,15 @@ final class DailyReportTest extends TestCase
         Http::fake(['https://wa.test/send' => Http::response(['ok' => true], 200)]);
         config(['services.whatsapp.driver' => 'node', 'services.whatsapp.url' => 'https://wa.test/send']);
 
-        $ramesh = $this->driver('Ramesh', '9111111111', 150);
-        $this->delivered($ramesh, 1, 150);
+        $ramesh = $this->driver('Ramesh', '9111111111', 15000);
+        $this->delivered($ramesh, 1);
 
         app(DailyReportNotifier::class)->sendFor(now()->toDateString());
 
         Http::assertSent(fn ($request) => $request->url() === 'https://wa.test/send'
             && $request['to'] === self::ADMIN_NUMBER
             && $request['template'] === 'report.daily'
-            && str_contains((string) $request['message'], 'Ramesh: 1 tanker'));
+            && str_contains((string) $request['message'], 'Ramesh: 1 delivery'));
 
         $this->assertSame(
             WhatsappMessage::STATUS_SENT,
@@ -200,7 +200,7 @@ final class DailyReportTest extends TestCase
         Http::fake(['https://wa.test/send' => Http::response('upstream down', 500)]);
         config(['services.whatsapp.driver' => 'node', 'services.whatsapp.url' => 'https://wa.test/send']);
 
-        $this->driver('Ramesh', '9111111111', 150);
+        $this->driver('Ramesh', '9111111111', 15000);
 
         // The sync queue surfaces the job's exception; the row is still marked.
         try {
@@ -215,10 +215,10 @@ final class DailyReportTest extends TestCase
         $this->assertStringContainsString('500', (string) $message->response);
     }
 
-    private function driver(string $name, string $mobile, float $rate): User
+    private function driver(string $name, string $mobile, float $salary): User
     {
         $driver = $this->userWithRole(RoleEnum::Driver, [
-            'first_name' => $name, 'last_name' => '', 'mobile' => $mobile, 'per_delivery_rate' => $rate,
+            'first_name' => $name, 'last_name' => '', 'mobile' => $mobile, 'monthly_salary' => $salary,
         ]);
 
         $tanker = Tanker::query()->create([
@@ -233,7 +233,7 @@ final class DailyReportTest extends TestCase
         return $driver->refresh();
     }
 
-    private function delivered(User $driver, int $count, float $earning, ?\DateTimeInterface $at = null): void
+    private function delivered(User $driver, int $count, ?\DateTimeInterface $at = null): void
     {
         for ($i = 0; $i < $count; $i++) {
             Order::query()->create([
@@ -243,7 +243,6 @@ final class DailyReportTest extends TestCase
                 'delivery_address' => 'Pune',
                 'delivery_date' => now()->toDateString(),
                 'order_amount' => 1000,
-                'driver_earning' => $earning,
                 'status' => OrderStatusEnum::Delivered,
                 'delivered_at' => $at ?? now(),
             ]);

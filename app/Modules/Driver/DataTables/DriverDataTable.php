@@ -20,8 +20,8 @@ final class DriverDataTable extends DataTable
             ->addColumn('name', fn (User $row): string => $row->full_name)
             ->addColumn('tanker', fn (User $row): string => $row->currentAssignment?->tanker?->label()
                 ?? '<span class="badge badge-light-secondary">No tanker</span>')
-            ->editColumn('per_delivery_rate', fn (User $row): string => '₹ '
-                .number_format((float) $row->per_delivery_rate, 2))
+            ->editColumn('monthly_salary', fn (User $row): string => '₹ '
+                .number_format((float) $row->monthly_salary, 2))
             ->editColumn('status', fn (User $row): string => view('admin.inc.action', [
                 'toggle' => $row,
                 'name' => 'status',
@@ -57,7 +57,7 @@ final class DriverDataTable extends DataTable
             ->addColumn(['data' => 'name', 'title' => __('Driver')])
             ->addColumn(['data' => 'mobile', 'title' => __('Mobile')])
             ->addColumn(['data' => 'tanker', 'title' => __('Assigned Tanker'), 'orderable' => false, 'searchable' => false])
-            ->addColumn(['data' => 'per_delivery_rate', 'title' => __('Rate / Delivery')])
+            ->addColumn(['data' => 'monthly_salary', 'title' => __('Monthly Salary')])
             ->addColumn(['data' => 'status', 'title' => __('Status'), 'orderable' => false, 'searchable' => false])
             ->addColumn(['data' => 'action', 'title' => __('Action'), 'orderable' => false, 'searchable' => false])
             ->minifiedAjax()

@@ -8,12 +8,28 @@ use App\Modules\Notification\Contracts\WhatsAppMessageInterface;
 use Illuminate\Support\Collection;
 
 /**
- * The 11:59pm summary: how many tankers each driver delivered and what they
- * earned. Built from DriverEarningReport, so it can never disagree with the
- * report screen.
+ * The 11:59pm summary: what each driver delivered today.
+ *
+ * No money per driver. Drivers are salaried, so the only figure that could go
+ * here is a monthly salary, and printing that against a single day's
+ * deliveries reads as what the driver earned today — which is why the
+ * dashboard's equivalent tile was dropped too.
+ *
+ * Built from DriverSalaryReport, so it can never disagree with the report
+ * screen. It reads that report's rows BY POSITION, which nothing enforces, so
+ * the indexes are named in one place below and asserted in
+ * tests/Feature/Notification/DailyReportTest.php — reorder a column there and
+ * the test fails instead of the owner's WhatsApp going quietly wrong.
  */
 final class DailyReportMessage implements WhatsAppMessageInterface
 {
+    /** Column positions in DriverSalaryReport::headings(). */
+    private const NAME = 0;
+
+    private const DELIVERED = 3;
+
+    private const TANKERS = 4;
+
     /**
      * @param  Collection<int, array<int, string|int|float|null>>  $rows
      * @param  array<string, string>  $totals
@@ -47,19 +63,21 @@ final class DailyReportMessage implements WhatsAppMessageInterface
         }
 
         foreach ($this->rows as $row) {
-            // Driver, _, _, delivered, _, _, earning
+            $tankers = (int) $row[self::TANKERS];
+
             $lines[] = sprintf(
-                '%s: %d tanker%s, ₹%s',
-                $row[0],
-                (int) $row[3],
-                (int) $row[3] === 1 ? '' : 's',
-                number_format((float) $row[6], 2),
+                '%s: %d %s, %d tanker%s',
+                $row[self::NAME],
+                (int) $row[self::DELIVERED],
+                (int) $row[self::DELIVERED] === 1 ? 'delivery' : 'deliveries',
+                $tankers,
+                $tankers === 1 ? '' : 's',
             );
         }
 
         $lines[] = '';
-        $lines[] = 'Total delivered: '.($this->totals['Tankers delivered'] ?? '0');
-        $lines[] = 'Total earning: '.($this->totals['Total earning'] ?? '₹ 0.00');
+        $lines[] = 'Total deliveries: '.($this->totals['Deliveries'] ?? '0');
+        $lines[] = 'Tankers delivered: '.($this->totals['Tankers delivered'] ?? '0');
         $lines[] = 'Order value: '.($this->totals['Order value'] ?? '₹ 0.00');
 
         return implode("\n", $lines);
@@ -73,9 +91,9 @@ final class DailyReportMessage implements WhatsAppMessageInterface
         return [
             'date' => $this->dateLabel,
             'drivers' => $this->rows->map(fn (array $row): array => [
-                'driver' => $row[0],
-                'delivered' => (int) $row[3],
-                'earning' => (float) $row[6],
+                'driver' => $row[self::NAME],
+                'delivered' => (int) $row[self::DELIVERED],
+                'tankers' => (int) $row[self::TANKERS],
             ])->all(),
             'totals' => $this->totals,
         ];

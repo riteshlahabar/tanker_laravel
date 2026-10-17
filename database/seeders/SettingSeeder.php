@@ -15,7 +15,7 @@ final class SettingSeeder extends Seeder
     private const DEFAULTS = [
         'admin_whatsapp_number' => '',
         'daily_report_time' => '23:59',
-        'default_driver_rate' => '150',
+        'default_monthly_salary' => '15000',
         'default_order_amount' => '0',
         // Water is sold by the tanker. This is the fallback price of one
         // tanker-load, used when the vehicle that delivered has no rate of its

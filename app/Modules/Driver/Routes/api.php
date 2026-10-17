@@ -7,14 +7,14 @@ use App\Modules\Driver\Controllers\Api\DriverListController;
 use App\Modules\Driver\Controllers\Api\DriverStoreController;
 use App\Modules\Driver\Controllers\Api\DriverSummaryController;
 use App\Modules\Driver\Controllers\Api\DriverUpdateController;
-use App\Modules\Driver\Controllers\Api\MyEarningsController;
+use App\Modules\Driver\Controllers\Api\MySalaryController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'access-token', 'active', 'throttle:api'])->group(function (): void {
 
     Route::prefix('driver')->name('api.driver.')->middleware('role:driver')->group(function (): void {
         Route::get('summary', DriverSummaryController::class)->name('summary');
-        Route::get('earnings', MyEarningsController::class)->name('earnings');
+        Route::get('salary', MySalaryController::class)->name('salary');
     });
 
     Route::middleware('role:admin')->prefix('admin')->name('api.admin.')->group(function (): void {

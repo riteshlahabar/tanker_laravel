@@ -17,9 +17,8 @@
         </div>
 
         <div class="row">
-            <x-stat-tile label="Driver Earnings Today"
-                :value="'₹ ' . number_format($summary['driver_earning_today'], 2)" icon="stroke-user"
-                colour="primary" />
+            <x-stat-tile label="Tankers Delivered Today" :value="$summary['tankers_delivered_today']"
+                icon="stroke-user" colour="primary" />
             <x-stat-tile label="Active Tankers" :value="$summary['tankers']" icon="stroke-task" colour="secondary" />
             <x-stat-tile label="Drivers" :value="$summary['drivers']" icon="stroke-user" colour="success" />
             <x-stat-tile label="Customers" :value="$summary['customers']" icon="stroke-contact" colour="warning" />

@@ -8,6 +8,6 @@ declare(strict_types=1);
  */
 
 return [
-    'default_driver_rate' => env('TANKER_DEFAULT_DRIVER_RATE', 150),
+    'default_monthly_salary' => env('TANKER_DEFAULT_MONTHLY_SALARY', 15000),
     'currency_symbol' => '₹',
 ];

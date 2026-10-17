@@ -29,10 +29,12 @@ final class DriverSummaryController
             'today' => [
                 'assigned' => (int) $mine->clone()->whereDate('delivery_date', $today)->open()->count(),
                 'delivered' => (int) $mine->clone()->whereDate('delivered_at', $today)->count(),
-                'earning' => (float) $mine->clone()
+                // Tanker-loads, not money: the driver is salaried, so there is
+                // no daily earning to show.
+                'tankers' => (int) $mine->clone()
                     ->where('status', OrderStatusEnum::Delivered)
                     ->whereDate('delivered_at', $today)
-                    ->sum('driver_earning'),
+                    ->sum('tanker_count'),
             ],
         ]);
     }

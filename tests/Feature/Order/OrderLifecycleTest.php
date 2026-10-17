@@ -43,7 +43,7 @@ final class OrderLifecycleTest extends TestCase
             'mobile' => '9123456780', 'first_name' => 'Sunita', 'address' => 'Kothrud, Pune',
         ]);
         $this->driver = $this->userWithRole(RoleEnum::Driver, [
-            'mobile' => '9876543210', 'first_name' => 'Ramesh', 'per_delivery_rate' => 150,
+            'mobile' => '9876543210', 'first_name' => 'Ramesh', 'monthly_salary' => 15000,
         ]);
         $this->tanker = Tanker::query()->create([
             'vehicle_name' => 'Water Tanker 1', 'vehicle_number' => 'MH12AB1234', 'capacity_litres' => 5000,
@@ -92,7 +92,7 @@ final class OrderLifecycleTest extends TestCase
             ->assertSessionHasErrors('customer_id');
     }
 
-    public function test_assigning_snapshots_the_tanker_refill_charge_and_driver_rate(): void
+    public function test_assigning_snapshots_the_tanker_and_refill_charge(): void
     {
         $this->giveDriverATanker();
         $order = $this->placeOrder();
@@ -111,21 +111,31 @@ final class OrderLifecycleTest extends TestCase
         $this->assertSame($this->tanker->id, $order->tanker_id);
         $this->assertSame($this->spot->id, $order->spot_id);
         $this->assertSame('400.00', $order->refill_charge);
-        $this->assertSame('150.00', $order->driver_earning);
         $this->assertNotNull($order->assigned_at);
     }
 
-    public function test_later_rate_changes_do_not_rewrite_an_assigned_order(): void
+    public function test_assigning_never_puts_the_drivers_salary_on_the_order(): void
     {
         $this->giveDriverATanker();
         $order = $this->placeOrder();
 
         $this->service()->assign($order, $this->driver->id, $this->spot->id, $this->adminUser);
 
-        $this->driver->update(['per_delivery_rate' => 999]);
+        // A salary is monthly and belongs to the driver, not to any one
+        // delivery, so no per-order pay is recorded at all.
+        $this->assertArrayNotHasKey('driver_earning', $order->refresh()->getAttributes());
+        $this->assertSame('15000.00', $order->driver->monthly_salary);
+    }
+
+    public function test_later_charge_changes_do_not_rewrite_an_assigned_order(): void
+    {
+        $this->giveDriverATanker();
+        $order = $this->placeOrder();
+
+        $this->service()->assign($order, $this->driver->id, $this->spot->id, $this->adminUser);
+
         $this->spot->update(['refill_charge' => 999]);
 
-        $this->assertSame('150.00', $order->refresh()->driver_earning);
         $this->assertSame('400.00', $order->refresh()->refill_charge);
     }
 

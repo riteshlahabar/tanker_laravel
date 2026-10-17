@@ -22,7 +22,7 @@ final class UpdateSettingRequest extends FormRequest
         return [
             'company_name' => ['required', 'string', 'max:255'],
             'admin_whatsapp_number' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{10,15}$/'],
-            'default_driver_rate' => ['required', 'numeric', 'min:0', 'max:999999.99'],
+            'default_monthly_salary' => ['required', 'numeric', 'min:0', 'max:9999999.99'],
             'default_order_amount' => ['required', 'numeric', 'min:0', 'max:9999999.99'],
             'price_per_tanker' => ['required', 'numeric', 'min:0', 'max:9999999.99'],
             'daily_report_time' => ['required', 'date_format:H:i'],

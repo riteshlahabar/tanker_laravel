@@ -6,7 +6,7 @@ namespace App\Modules\Notification\Services;
 
 use App\Modules\Notification\Contracts\WhatsAppDispatcherInterface;
 use App\Modules\Notification\Messages\DailyReportMessage;
-use App\Modules\Report\Reports\DriverEarningReport;
+use App\Modules\Report\Reports\DriverSalaryReport;
 use App\Modules\Report\Support\ReportFilters;
 
 /**
@@ -16,7 +16,7 @@ use App\Modules\Report\Support\ReportFilters;
 final class DailyReportNotifier
 {
     public function __construct(
-        private readonly DriverEarningReport $report,
+        private readonly DriverSalaryReport $report,
         private readonly WhatsAppDispatcherInterface $dispatcher,
         private readonly AdminRecipient $admin,
     ) {}
@@ -31,6 +31,9 @@ final class DailyReportNotifier
         $message = new DailyReportMessage(
             adminNumber: $this->admin->number(),
             dateLabel: $filters->label(),
+            // Column 3 is the delivered count — drivers who delivered nothing
+            // today are left out. Same by-position coupling to
+            // DriverSalaryReport::headings() that DailyReportMessage documents.
             rows: $this->report->rows($filters)->filter(fn (array $row): bool => (int) $row[3] > 0)->values(),
             totals: $this->report->totals($filters),
         );
