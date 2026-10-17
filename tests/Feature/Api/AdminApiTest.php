@@ -255,7 +255,7 @@ final class AdminApiTest extends TestCase
             ->assertJsonPath('message', 'This driver has no tanker assigned. Give them a tanker first.');
     }
 
-    public function test_the_report_index_lists_the_six_reports(): void
+    public function test_the_report_index_lists_the_seven_reports(): void
     {
         $response = $this->actingAsApi($this->adminUser)
             ->getJson(route('api.admin.reports.index'))
@@ -263,7 +263,7 @@ final class AdminApiTest extends TestCase
 
         $this->assertSame([
             'driver-salary', 'daily-delivery', 'spot-refill', 'customer-order', 'tanker-utilisation',
-            'schedule-adherence',
+            'schedule-adherence', 'driver-expense',
         ], array_column($response->json('data'), 'key'));
     }
 

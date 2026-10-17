@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Modules\Report\Controllers\CustomerOrderReportController;
 use App\Modules\Report\Controllers\DailyDeliveryReportController;
+use App\Modules\Report\Controllers\DriverExpenseReportController;
 use App\Modules\Report\Controllers\DriverSalaryReportController;
 use App\Modules\Report\Controllers\ReportExportController;
 use App\Modules\Report\Controllers\ScheduleAdherenceReportController;
@@ -21,6 +22,7 @@ Route::middleware(['auth', 'active', 'role:admin'])
         Route::get('customer-order', CustomerOrderReportController::class)->name('customer-order');
         Route::get('tanker-utilisation', TankerUtilisationReportController::class)->name('tanker-utilisation');
         Route::get('schedule-adherence', ScheduleAdherenceReportController::class)->name('schedule-adherence');
+        Route::get('driver-expense', DriverExpenseReportController::class)->name('driver-expense');
 
         Route::get('{report}/export', ReportExportController::class)
             ->middleware('throttle:exports')

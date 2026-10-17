@@ -30,6 +30,8 @@ final class DailyReportMessage implements WhatsAppMessageInterface
 
     private const TANKERS = 4;
 
+    private const EXPENSES = 8;
+
     /**
      * @param  Collection<int, array<int, string|int|float|null>>  $rows
      * @param  array<string, string>  $totals
@@ -79,6 +81,9 @@ final class DailyReportMessage implements WhatsAppMessageInterface
         $lines[] = 'Total deliveries: '.($this->totals['Deliveries'] ?? '0');
         $lines[] = 'Tankers delivered: '.($this->totals['Tankers delivered'] ?? '0');
         $lines[] = 'Order value: '.($this->totals['Order value'] ?? '₹ 0.00');
+        // One line a day rather than a message per petrol fill — the owner's
+        // choice (2026-10-17).
+        $lines[] = 'Expenses today: '.($this->totals['Expenses in the range'] ?? '₹ 0.00');
 
         return implode("\n", $lines);
     }
@@ -94,6 +99,7 @@ final class DailyReportMessage implements WhatsAppMessageInterface
                 'driver' => $row[self::NAME],
                 'delivered' => (int) $row[self::DELIVERED],
                 'tankers' => (int) $row[self::TANKERS],
+                'expenses' => (float) ($row[self::EXPENSES] ?? 0),
             ])->all(),
             'totals' => $this->totals,
         ];

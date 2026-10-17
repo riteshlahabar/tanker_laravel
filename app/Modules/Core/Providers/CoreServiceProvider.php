@@ -10,6 +10,7 @@ use App\Modules\Customer\Providers\CustomerServiceProvider;
 use App\Modules\Dashboard\Providers\DashboardServiceProvider;
 use App\Modules\DeliverySlot\Providers\DeliverySlotServiceProvider;
 use App\Modules\Driver\Providers\DriverServiceProvider;
+use App\Modules\Expense\Providers\ExpenseServiceProvider;
 use App\Modules\Notification\Providers\NotificationServiceProvider;
 use App\Modules\Order\Providers\OrderServiceProvider;
 use App\Modules\Report\Providers\ReportServiceProvider;
@@ -40,6 +41,7 @@ final class CoreServiceProvider extends ServiceProvider
         DeliverySlotServiceProvider::class,
         ScheduleServiceProvider::class,
         OrderServiceProvider::class,
+        ExpenseServiceProvider::class,
         ReportServiceProvider::class,
         NotificationServiceProvider::class,
         SettingServiceProvider::class,

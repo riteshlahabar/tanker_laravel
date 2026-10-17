@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Modules\Core\Enums\RoleEnum;
+use App\Modules\Expense\Models\DriverExpense;
 use App\Modules\Order\Models\Order;
 use App\Modules\Schedule\Models\DeliverySchedule;
 use App\Modules\Tanker\Models\Tanker;
@@ -113,6 +114,14 @@ class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'customer_id');
+    }
+
+    /**
+     * What this driver spent out of pocket — petrol and the like.
+     */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(DriverExpense::class, 'driver_id');
     }
 
     /**

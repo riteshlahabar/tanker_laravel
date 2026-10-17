@@ -40,7 +40,13 @@ final class DriverSalaryReport implements ReportInterface
      */
     public function headings(): array
     {
-        return ['Driver', 'Mobile', 'Tanker', 'Delivered', 'Tankers', 'Order Value', 'Refill Cost', 'Monthly Salary'];
+        // Expenses is APPENDED, never inserted. DailyReportMessage reads this
+        // report's rows by position (0, 3, 4), so a column added in the middle
+        // would silently change what the owner's nightly WhatsApp says.
+        return [
+            'Driver', 'Mobile', 'Tanker', 'Delivered', 'Tankers',
+            'Order Value', 'Refill Cost', 'Monthly Salary', 'Expenses',
+        ];
     }
 
     /**
@@ -67,6 +73,7 @@ final class DriverSalaryReport implements ReportInterface
                 (float) $driver->order_value,
                 (float) $driver->refill_cost,
                 (float) $driver->monthly_salary,
+                (float) $driver->expense_total,
             ])
             ->values();
     }
@@ -86,6 +93,9 @@ final class DriverSalaryReport implements ReportInterface
             // Named at length on purpose: a bare "Total salary" beside
             // range-bound figures reads as the cost of the range, which it is not.
             'Salary per month (not for the range)' => '₹ '.number_format((float) $rows->sum('monthly_salary'), 2),
+            // This one IS range-bound, hence the different wording. The two
+            // must never be added together into a single "cost".
+            'Expenses in the range' => '₹ '.number_format((float) $rows->sum('expense_total'), 2),
         ];
     }
 
@@ -108,6 +118,13 @@ final class DriverSalaryReport implements ReportInterface
             ->withSum(['deliveredOrders as loads' => $inRange], 'tanker_count')
             ->withSum(['deliveredOrders as order_value' => $inRange], 'order_amount')
             ->withSum(['deliveredOrders as refill_cost' => $inRange], 'refill_charge')
+            // What the driver spent out of pocket over the same range, so the
+            // owner's real cost per driver — salary plus spending — is on one
+            // row. expense_date is a DATE column, so plain dates, not the
+            // datetime helpers the order columns need.
+            ->withSum(['expenses as expense_total' => fn (Builder $q) => $q
+                ->whereBetween('expense_date', [$filters->from, $filters->to]),
+            ], 'amount')
             ->when($filters->driverId !== null, fn (Builder $q) => $q->whereKey($filters->driverId))
             ->when($filters->search !== null, fn (Builder $q) => $q
                 ->whereAny(['first_name', 'last_name', 'mobile'], 'like', "%{$filters->search}%"))

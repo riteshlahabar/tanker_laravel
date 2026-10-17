@@ -8,6 +8,7 @@ use App\Modules\Report\Contracts\ReportInterface;
 use App\Modules\Report\Contracts\ReportRegistryInterface;
 use App\Modules\Report\Reports\CustomerOrderReport;
 use App\Modules\Report\Reports\DailyDeliveryReport;
+use App\Modules\Report\Reports\DriverExpenseReport;
 use App\Modules\Report\Reports\DriverSalaryReport;
 use App\Modules\Report\Reports\ScheduleAdherenceReport;
 use App\Modules\Report\Reports\SpotRefillReport;
@@ -30,6 +31,7 @@ final class ReportRegistry implements ReportRegistryInterface
         CustomerOrderReport::class,
         TankerUtilisationReport::class,
         ScheduleAdherenceReport::class,
+        DriverExpenseReport::class,
     ];
 
     public function get(string $key): ReportInterface

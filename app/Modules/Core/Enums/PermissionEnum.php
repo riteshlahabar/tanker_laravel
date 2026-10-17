@@ -36,6 +36,11 @@ enum PermissionEnum: string
     case OrderUpdateStatus = 'order.update-status';
     case OrderCancel = 'order.cancel';
 
+    case ExpenseView = 'expense.view';
+    case ExpenseCreate = 'expense.create';
+    // Editing or deleting somebody else's expense — the admin's override.
+    case ExpenseManage = 'expense.manage';
+
     case ReportView = 'report.view';
     case ReportExport = 'report.export';
 
@@ -63,6 +68,11 @@ enum PermissionEnum: string
                 self::OrderUpdateStatus->value,
                 self::SpotView->value,
                 self::SlotView->value,
+                // Their own out-of-pocket spending. No ExpenseManage: a driver
+                // may only ever touch their own rows, which the policy and the
+                // repository scope enforce on top of this.
+                self::ExpenseView->value,
+                self::ExpenseCreate->value,
             ],
             RoleEnum::Customer => [
                 self::OrderView->value,

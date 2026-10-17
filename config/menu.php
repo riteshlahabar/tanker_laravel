@@ -53,6 +53,14 @@ return [
         'route' => 'admin.slot.index',
     ],
     [
+        // 'charts' rather than a wallet icon: the sprite has no money icon,
+        // and every menu icon must exist as both stroke- and fill- in
+        // public/assets/svg/icon-sprite.svg.
+        'title' => 'Driver Expenses',
+        'icon' => 'charts',
+        'route' => 'admin.expense.index',
+    ],
+    [
         'title' => 'Reports',
         'icon' => 'reports',
         'children' => [
@@ -62,6 +70,7 @@ return [
             ['title' => 'Customer Orders', 'route' => 'admin.report.customer-order'],
             ['title' => 'Tanker Utilisation', 'route' => 'admin.report.tanker-utilisation'],
             ['title' => 'Schedule Adherence', 'route' => 'admin.report.schedule-adherence'],
+            ['title' => 'Driver Expenses', 'route' => 'admin.report.driver-expense'],
         ],
     ],
     [
