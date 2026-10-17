@@ -68,6 +68,21 @@ enum OrderStatusEnum: string
     }
 
     /**
+     * The wire values of every status that still needs work doing — what the
+     * dashboard's open-orders list is scoped to. Derived from [isOpen] rather
+     * than listed again, so adding a status cannot leave the two disagreeing.
+     *
+     * @return array<int, string>
+     */
+    public static function openValues(): array
+    {
+        return array_values(array_map(
+            fn (self $case): string => $case->value,
+            array_filter(self::cases(), fn (self $case): bool => $case->isOpen()),
+        ));
+    }
+
+    /**
      * @return array<string, string>
      */
     public static function options(): array

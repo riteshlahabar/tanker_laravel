@@ -30,5 +30,11 @@
             <x-stat-tile label="Scheduled Tomorrow" :value="$summary['scheduled_tomorrow']"
                 icon="stroke-to-do" colour="primary" />
         </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                @include('dashboard::_partials.open-orders')
+            </div>
+        </div>
     </div>
 @endsection

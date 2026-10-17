@@ -13,8 +13,12 @@ final class DashboardController
 
     public function __invoke(): View
     {
+        $open = $this->dashboard->openOrders();
+
         return view('dashboard::index', [
             'summary' => $this->dashboard->summary(),
+            'openOrders' => $open['orders'],
+            'openTotal' => $open['total'],
         ]);
     }
 }

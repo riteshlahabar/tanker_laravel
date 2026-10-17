@@ -10,6 +10,7 @@ use App\Modules\Core\Repositories\BaseRepository;
 use App\Modules\Order\Contracts\OrderRepositoryInterface;
 use App\Modules\Order\Models\Order;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 final class OrderRepository extends BaseRepository implements OrderRepositoryInterface
 {
@@ -59,5 +60,30 @@ final class OrderRepository extends BaseRepository implements OrderRepositoryInt
             // daily figure of a monthly cost would mean nothing.
             'tankers_delivered_today' => (int) $delivered->clone()->sum('tanker_count'),
         ];
+    }
+
+    /**
+     * @return Collection<int, Order>
+     */
+    public function open(int $limit): Collection
+    {
+        return Order::query()
+            // Eager-loaded to exactly what the dashboard row and the API
+            // resource read — the narrow-select trap of 2026-10-16.
+            ->with([
+                'customer:id,first_name,last_name',
+                'driver:id,first_name,last_name',
+                'tanker:id,vehicle_number',
+                'spot:id,name',
+            ])
+            ->whereIn('status', OrderStatusEnum::openValues())
+            ->latest('id')
+            ->limit($limit)
+            ->get();
+    }
+
+    public function openCount(): int
+    {
+        return Order::query()->whereIn('status', OrderStatusEnum::openValues())->count();
     }
 }
