@@ -1,0 +1,53 @@
+/*
+ * Project overrides.
+ *
+ * Loaded last, after Cuba's own stylesheets. It has to be: `@yield('css')` in
+ * layouts/simple/css.blade.php sits *before* bootstrap.css and style.css, so
+ * anything a page pushes there loses the cascade to the theme.
+ *
+ * Cuba's supplied files under public/assets are never edited — see CLAUDE.md,
+ * "Design sources". Corrections go here instead.
+ */
+
+/*
+ * The DataTable delete modal painted fully transparent.
+ *
+ * Bootstrap 5.3 draws a dialog with `background-color: var(--bs-modal-bg)`,
+ * and declares `--bs-modal-bg: var(--bs-body-bg)`. Cuba declares
+ * `--bs-body-bg: auto` on `.table` (assets/css/style.css:209) for its row
+ * striping, and admin/inc/action.blade.php renders each row's delete modal
+ * inside that row's `<td>`. The modal therefore inherits `auto`, which is not
+ * a valid `background-color` and computes to `rgba(0, 0, 0, 0)` — the dialog
+ * keeps its border, text and buttons but has no surface behind them.
+ *
+ * Neither half is wrong on its own, which is why this went unnoticed: the
+ * variable only reaches a modal because the modal lives inside the table.
+ *
+ * Re-declaring the variable on `.modal` restores the surface for every dialog
+ * without touching Cuba's CSS. Dark mode is unaffected — Cuba paints
+ * `body.dark-only .page-wrapper .modal-content` with a direct
+ * `background-color`, which beats a variable-derived one regardless.
+ */
+.modal {
+    --bs-body-bg: #fff;
+}
+
+/*
+ * The modal's secondary button was white text on a white card.
+ *
+ * Separate from the transparency above and older than it — `.btn-light` is
+ * black everywhere else in the panel and only turns white inside
+ * `.modal-footer`, where Cuba leaves it inheriting a light colour. It was
+ * simply hard to notice while the dialog had no surface behind it.
+ *
+ * Affects the two secondary actions the panel has: "Cancel" on
+ * admin/inc/delete-modal.blade.php and "Keep Order" on the order
+ * cancel-modal. Pinned to the colour the same button already computes on an
+ * ordinary page, so nothing new is invented.
+ *
+ * Excluded from dark mode, where Cuba paints the modal dark and black text
+ * would be the unreadable one.
+ */
+body:not(.dark-only) .modal-footer .btn-light {
+    color: #000;
+}

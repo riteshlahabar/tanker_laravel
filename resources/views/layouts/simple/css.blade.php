@@ -22,3 +22,5 @@
 <!-- Responsive css-->
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/responsive.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/vendors/toastr.min.css') }}">
+<!-- Project overrides — must stay last, after Cuba's own css-->
+<link rel="stylesheet" type="text/css" href="{{ asset('css/app.css') }}">
