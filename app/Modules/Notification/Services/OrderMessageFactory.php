@@ -11,7 +11,8 @@ use App\Modules\Notification\Messages\Order\OrderCancelledMessage;
 use App\Modules\Notification\Messages\Order\OrderDeliveredMessage;
 use App\Modules\Notification\Messages\Order\OrderOutForDeliveryMessage;
 use App\Modules\Notification\Messages\Order\OrderPlacedMessage;
-use App\Modules\Notification\Messages\Order\OrderRefillingMessage;
+// Refilling notices are switched off — see the commented mapping below.
+// use App\Modules\Notification\Messages\Order\OrderRefillingMessage;
 use App\Modules\Order\Models\Order;
 
 /**
@@ -26,7 +27,15 @@ final class OrderMessageFactory
     private const MESSAGES = [
         'pending' => OrderPlacedMessage::class,
         'assigned' => OrderAssignedMessage::class,
-        'refilling' => OrderRefillingMessage::class,
+        // Switched off at the owner's request: the customer is already told at
+        // `assigned` and again at `out_for_delivery`, so the refill notice sat
+        // between the two as noise. An unmapped status is a supported state —
+        // `for()` returns null and the listener skips it — so nothing else
+        // changes: `refilling` still transitions, stamps `refilled_at` and
+        // writes its status log. To restore, uncomment this line and the
+        // import above, and put 'order.refilling' back in
+        // OrderNotificationTest::test_every_step_of_the_road_is_announced.
+        // 'refilling' => OrderRefillingMessage::class,
         'out_for_delivery' => OrderOutForDeliveryMessage::class,
         'delivered' => OrderDeliveredMessage::class,
         'cancelled' => OrderCancelledMessage::class,

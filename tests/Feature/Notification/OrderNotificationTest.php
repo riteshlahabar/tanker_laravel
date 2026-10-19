@@ -116,8 +116,11 @@ final class OrderNotificationTest extends TestCase
     {
         $this->deliverOrder();
 
+        // 'order.refilling' is deliberately absent — that notice is switched
+        // off in OrderMessageFactory. Put it back between 'order.assigned' and
+        // 'order.out-for-delivery' if the mapping is ever restored.
         $this->assertSame([
-            'order.placed', 'order.assigned', 'order.refilling',
+            'order.placed', 'order.assigned',
             'order.out-for-delivery', 'order.delivered',
         ], WhatsappMessage::query()->orderBy('id')->pluck('template')->unique()->values()->all());
     }
