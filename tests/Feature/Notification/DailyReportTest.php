@@ -195,7 +195,14 @@ final class DailyReportTest extends TestCase
         );
     }
 
-    public function test_a_failing_service_leaves_the_message_marked_failed(): void
+    /**
+     * One refused attempt is **not** a dead message: six tries spread over
+     * about fifty minutes remain, so the row stays pending with the reason
+     * recorded rather than being announced as failed in the log. It is marked
+     * failed only once that budget is spent — asserted in
+     * {@see WhatsappDeliveryTest}.
+     */
+    public function test_a_failing_service_records_the_reason_and_waits_to_retry(): void
     {
         Http::fake(['https://wa.test/send' => Http::response('upstream down', 500)]);
         config(['services.whatsapp.driver' => 'node', 'services.whatsapp.url' => 'https://wa.test/send']);
@@ -211,7 +218,10 @@ final class DailyReportTest extends TestCase
 
         $message = WhatsappMessage::query()->latest('id')->firstOrFail();
 
-        $this->assertSame(WhatsappMessage::STATUS_FAILED, $message->status);
+        $this->assertSame(WhatsappMessage::STATUS_PENDING, $message->status);
+        $this->assertSame(1, $message->attempts);
+        // The reason is what the log screen now shows, so recording it is the
+        // assertion that matters either way.
         $this->assertStringContainsString('500', (string) $message->response);
     }
 

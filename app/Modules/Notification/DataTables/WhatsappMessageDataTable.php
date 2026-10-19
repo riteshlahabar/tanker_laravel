@@ -35,7 +35,55 @@ final class WhatsappMessageDataTable extends DataTable
             ))
             ->editColumn('created_at', fn (WhatsappMessage $row): string => $row->created_at->format('d M Y, H:i'))
             ->editColumn('sent_at', fn (WhatsappMessage $row): string => $row->sent_at?->format('d M Y, H:i') ?? '—')
-            ->rawColumns(['body', 'status']);
+            ->addColumn('reason', $this->reason())
+            ->addColumn('action', $this->action())
+            ->rawColumns(['body', 'status', 'reason', 'action']);
+    }
+
+    /**
+     * **The column this whole screen was missing.** `response` has always been
+     * recorded, and nothing ever displayed it — so a failure showed as a bare
+     * red badge and the owner had no way to tell "WhatsApp is not connected"
+     * from a wrong API key. That is why the lost `order.assigned` pair of
+     * 2026-10-17 looked like a mystery for days.
+     *
+     * A delivered row's response says nothing worth a column, so only a
+     * message that is still fighting or has given up shows one.
+     *
+     * @return callable(WhatsappMessage): string
+     */
+    private function reason(): callable
+    {
+        return static function (WhatsappMessage $row): string {
+            if ($row->status === WhatsappMessage::STATUS_SENT || blank($row->response)) {
+                return '<span class="text-muted">—</span>';
+            }
+
+            $response = (string) $row->response;
+
+            return sprintf(
+                // The full text in the tooltip: a gateway can answer with a
+                // stack trace, and 160 characters of it is enough to diagnose
+                // without wrecking the table's layout.
+                '<span class="text-danger" title="%s">%s</span>',
+                e($response),
+                e(str($response)->squish()->limit(160)->value()),
+            );
+        };
+    }
+
+    /**
+     * @return callable(WhatsappMessage): string
+     */
+    private function action(): callable
+    {
+        return static function (WhatsappMessage $row): string {
+            if (! $row->isResendable()) {
+                return '';
+            }
+
+            return view('notification::_partials.resend-button', ['message' => $row])->render();
+        };
     }
 
     public function query(WhatsappMessage $model): QueryBuilder
@@ -60,6 +108,18 @@ final class WhatsappMessageDataTable extends DataTable
             ->addColumn(['data' => 'status', 'title' => __('Status'), 'searchable' => false])
             ->addColumn(['data' => 'attempts', 'title' => __('Tries'), 'searchable' => false])
             ->addColumn(['data' => 'sent_at', 'title' => __('Sent'), 'searchable' => false])
+            ->addColumn([
+                'data' => 'reason',
+                'title' => __('Why it failed'),
+                'searchable' => false,
+                'orderable' => false,
+            ])
+            ->addColumn([
+                'data' => 'action',
+                'title' => __('Action'),
+                'searchable' => false,
+                'orderable' => false,
+            ])
             ->minifiedAjax()
             ->orderBy(0, 'desc')
             ->parameters(DataTableDefaults::parameters());

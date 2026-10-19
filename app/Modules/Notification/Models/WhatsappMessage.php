@@ -67,4 +67,45 @@ class WhatsappMessage extends Model
             'attempts' => $this->attempts + 1,
         ]);
     }
+
+    /**
+     * An attempt failed but the job has tries left.
+     *
+     * The row stays pending on purpose: with a retry budget of roughly fifty
+     * minutes, marking it Failed on the first stumble would have the log
+     * announcing a dead message for the best part of an hour while the queue
+     * was still going to deliver it. The reason is recorded anyway, so a
+     * pending row with attempts on it reads as "still trying, last error was
+     * this".
+     */
+    public function markRetrying(string $response): void
+    {
+        $this->update([
+            'status' => self::STATUS_PENDING,
+            'response' => $response,
+            'attempts' => $this->attempts + 1,
+        ]);
+    }
+
+    /**
+     * Put a message that never went back on the queue.
+     *
+     * `attempts` is deliberately *not* reset — it is the row's history, and an
+     * owner looking at "6 tries" wants to know this message has been fighting,
+     * not see the counter start again at one.
+     */
+    public function queueForResend(): void
+    {
+        $this->update(['status' => self::STATUS_PENDING]);
+    }
+
+    /**
+     * Anything that is not already delivered can be sent again — a row stuck
+     * pending because no queue worker was running needs resending just as much
+     * as one the gateway refused.
+     */
+    public function isResendable(): bool
+    {
+        return $this->status !== self::STATUS_SENT;
+    }
 }
