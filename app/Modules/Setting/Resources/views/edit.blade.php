@@ -7,7 +7,7 @@
 
     <div class="container-fluid">
         <div class="row">
-            <div class="col-xl-8">
+            <div class="col-sm-12">
                 <div class="card">
                     <div class="card-header">
                         <h4>General</h4>
@@ -20,9 +20,6 @@
                         </form>
                     </div>
                 </div>
-            </div>
-            <div class="col-xl-4">
-                @include('setting::_partials.daily-report-card')
             </div>
         </div>
     </div>
