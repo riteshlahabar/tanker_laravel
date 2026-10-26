@@ -33,7 +33,7 @@ return [
         'route' => 'admin.customer.index',
     ],
     [
-        'title' => 'Spots',
+        'title' => 'Filling Points',
         'icon' => 'maps',
         'route' => 'admin.spot.index',
     ],
