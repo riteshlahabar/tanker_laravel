@@ -166,6 +166,7 @@ final class AdminApiTest extends TestCase
                 'mobile' => '9444444444',
                 'password' => 'customer-pass-1',
                 'password_confirmation' => 'customer-pass-1',
+                'address' => 'Kothrud, Pune',
                 'can_self_order' => false,
                 'status' => 1,
             ])
@@ -182,6 +183,7 @@ final class AdminApiTest extends TestCase
             ->putJson(route('api.admin.customers.update', $customer), [
                 'first_name' => $customer->first_name,
                 'mobile' => '9555555555',
+                'address' => 'Kothrud, Pune',
                 'can_self_order' => false,
                 'status' => 1,
             ])

@@ -5,7 +5,8 @@
 <x-form.text name="last_name" label="Last Name" :value="$customer?->last_name" />
 
 <x-form.text name="mobile" label="Mobile Number" :value="$customer?->mobile" placeholder="e.g. 9876543210"
-    help="Used to sign in to the app." required />
+    help="Exactly 10 digits. Used to sign in to the app." required
+    :attrs="['maxlength' => 10, 'inputmode' => 'numeric']" />
 
 <x-form.status :value="$customer?->status ?? true" />
 
@@ -18,7 +19,8 @@
 
 <x-form.password-pair :editing="$customer !== null" />
 
-<x-form.textarea name="address" label="Delivery Address" :value="$customer?->address" rows="2" />
+<x-form.textarea name="address" label="Delivery Address" :value="$customer?->address" rows="2"
+    required />
 
 <x-form.text name="latitude" label="Latitude" :value="$customer?->latitude" :attrs="['step' => 'any']" />
 

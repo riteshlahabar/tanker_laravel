@@ -34,13 +34,21 @@ final class CustomerService extends BaseService implements CustomerServiceInterf
     }
 
     /**
-     * Soft delete keeps the customer's past orders readable in reports.
+     * A hard delete, at the owner's instruction (2026-10-26): the row leaves
+     * `users` outright rather than being stamped `deleted_at`.
+     *
+     * Two consequences, both deliberate. `orders.customer_id` and
+     * `delivery_schedules.customer_id` are `cascadeOnDelete`, so the customer's
+     * orders, their status logs, their standing orders and the skips on them go
+     * with them — their trade disappears from every report covering a past
+     * date. And the mobile number is freed immediately, which is what lets the
+     * same number be registered again.
      */
     public function delete(User $customer): void
     {
         $this->transaction(function () use ($customer): void {
             $customer->tokens()->delete();
-            $this->customers->remove($customer->id);
+            $this->customers->purge($customer->id);
         });
     }
 

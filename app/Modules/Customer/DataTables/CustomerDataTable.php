@@ -29,6 +29,8 @@ final class CustomerDataTable extends DataTable
             ->addColumn('action', fn (User $row): string => view('admin.inc.action', [
                 'edit' => 'admin.customer.edit',
                 'delete' => 'admin.customer.destroy',
+                'note' => __('This erases the customer outright, along with their orders, '
+                    .'standing orders and delivery history. It cannot be undone.'),
                 'data' => $row,
             ])->render())
             ->filterColumn('name', fn (QueryBuilder $query, string $keyword) => $query

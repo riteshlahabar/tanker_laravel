@@ -8,7 +8,7 @@
             </div>
             <div class="modal-body">
                 <h6 class="mb-2">{{ __('Are you sure you want to delete this record?') }}</h6>
-                <p class="mb-0 f-light">{{ __('This cannot be undone.') }}</p>
+                <p class="mb-0 f-light">{{ $note ?? __('This cannot be undone.') }}</p>
             </div>
             <div class="modal-footer">
                 <form action="{{ route($delete, $data->id) }}" method="POST">

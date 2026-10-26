@@ -20,10 +20,12 @@ final class UpdateCustomerRequest extends StoreCustomerRequest
         return ['nullable', 'string', 'confirmed', Password::min(8)];
     }
 
+    /**
+     * Same unconditional index as on create — see the parent — minus this
+     * customer's own row, so saving the form without touching the number works.
+     */
     protected function uniqueMobile(): Unique
     {
-        return Rule::unique('users', 'mobile')
-            ->ignore($this->route('customer'))
-            ->whereNull('deleted_at');
+        return Rule::unique('users', 'mobile')->ignore($this->route('customer'));
     }
 }

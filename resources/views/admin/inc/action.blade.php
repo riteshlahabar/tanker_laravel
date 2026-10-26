@@ -17,7 +17,11 @@
                 title="{{ __('Delete') }}">
                 <i class="remove-icon" data-feather="trash-2"></i>
             </a>
-            @include('admin.inc.delete-modal', ['data' => $data, 'delete' => $delete])
+            @include('admin.inc.delete-modal', [
+                'data' => $data,
+                'delete' => $delete,
+                'note' => $note ?? null,
+            ])
         @endisset
     @endisset
 
