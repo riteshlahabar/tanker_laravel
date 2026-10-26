@@ -27,15 +27,24 @@ trait BuildsScheduleForm
             ->orderBy('first_name')
             ->get(['id', 'first_name', 'last_name']);
 
+        $customers = app(CustomerRepositoryInterface::class)->scopedQuery()
+            ->where('status', true)
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name', 'mobile', 'address']);
+
         return [
-            'customers' => app(CustomerRepositoryInterface::class)->scopedQuery()
-                ->where('status', true)
-                ->orderBy('first_name')
-                ->get(['id', 'first_name', 'last_name', 'mobile', 'address'])
+            'customers' => $customers
                 ->mapWithKeys(fn (User $c): array => [
                     $c->id => $c->full_name.' — '.$c->mobile,
                 ])
                 ->all(),
+
+            // The address each customer is registered at, so choosing one fills
+            // the delivery address in — the same behaviour the New Order form
+            // has had all along. The query was already selecting `address`;
+            // `mapWithKeys` threw it away before the view could see it, which
+            // is why the field stayed empty.
+            'customerAddresses' => $customers->pluck('address', 'id')->all(),
 
             'slots' => ['' => 'Use an exact time instead']
                 + app(DeliverySlotRepositoryInterface::class)->options(),

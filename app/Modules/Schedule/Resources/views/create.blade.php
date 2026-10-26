@@ -29,5 +29,6 @@
 @endsection
 
 @section('scripts')
+    @include('schedule::_partials.customer-autofill')
     @include('schedule::_partials.amount-script')
 @endsection
