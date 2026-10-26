@@ -17,13 +17,13 @@
     :options="[1 => 'Yes — orders from the app', 0 => 'No — fixed routine managed by the office']"
     help="Set to No for customers on a standing order." required />
 
-<x-form.password-pair :editing="$customer !== null" />
+{{-- Password, confirmation and the delivery address share one row: a third
+     each. The address was a full-width box of its own underneath, which left
+     the form with a wide empty strip and pushed the Save button off the first
+     screen. --}}
+<x-form.password-pair :editing="$customer !== null" width="col-md-4" />
 
 <x-form.textarea name="address" label="Delivery Address" :value="$customer?->address" rows="2"
-    required />
-
-<x-form.text name="latitude" label="Latitude" :value="$customer?->latitude" :attrs="['step' => 'any']" />
-
-<x-form.text name="longitude" label="Longitude" :value="$customer?->longitude" :attrs="['step' => 'any']" />
+    width="col-md-4" required />
 
 <x-form.actions :cancel="route('admin.customer.index')" :label="$customer ? 'Update Customer' : 'Save Customer'" />

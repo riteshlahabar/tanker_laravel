@@ -35,7 +35,7 @@ final class CustomerExport implements FromQuery, ShouldAutoSize, WithHeadings, W
      */
     public function headings(): array
     {
-        return ['Name', 'Mobile', 'Address', 'Latitude', 'Longitude', 'Joined', 'Status'];
+        return ['Name', 'Mobile', 'Address', 'Joined', 'Status'];
     }
 
     /**
@@ -48,8 +48,6 @@ final class CustomerExport implements FromQuery, ShouldAutoSize, WithHeadings, W
             $row->full_name,
             $row->mobile,
             $row->address,
-            $row->latitude,
-            $row->longitude,
             $row->created_at->format('d-m-Y'),
             $row->status ? 'Active' : 'Inactive',
         ];

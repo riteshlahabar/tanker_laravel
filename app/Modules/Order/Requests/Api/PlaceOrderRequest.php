@@ -49,8 +49,6 @@ final class PlaceOrderRequest extends FormRequest
             // Optional: left out, the customer's own address — the one entered
             // when the admin added them — is used. See CustomerAddressResolver.
             'delivery_address' => ['nullable', 'string', 'max:1000'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'delivery_date' => ['required', 'date', 'after_or_equal:today'],
             'delivery_slot' => ['nullable', 'string', 'max:50'],
             // Naming a window is what gives the order a concrete delivery_at.
@@ -64,17 +62,18 @@ final class PlaceOrderRequest extends FormRequest
     }
 
     /**
+     * @param  array{tanker_rate: float, order_amount: float}  $price
      * @return array<string, mixed>
      */
-    public function orderData(float $amount): array
+    public function orderData(array $price): array
     {
         return [
             ...$this->validated(),
+            ...$price,
             'customer_id' => $this->user()->id,
-            'order_amount' => $amount,
             // Calculated, not given — so assignment is free to re-price it
             // from the tanker that actually goes out.
-            'amount_fixed' => false,
+            'rate_fixed' => false,
         ];
     }
 }

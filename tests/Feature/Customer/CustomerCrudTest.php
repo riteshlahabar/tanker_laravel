@@ -202,18 +202,13 @@ final class CustomerCrudTest extends TestCase
     public function test_every_field_answers_in_its_own_words(): void
     {
         $this->actingAs($this->adminUser)
-            ->post(route('admin.customer.store'), [
-                'latitude' => 200,
-                'longitude' => 'east',
-            ])
+            ->post(route('admin.customer.store'), [])
             ->assertSessionHasErrors([
                 'first_name' => 'Enter the first name.',
                 'mobile' => 'Enter the mobile number — it is what the customer signs in with.',
                 'password' => 'Set an app password for the customer.',
                 'address' => 'Enter the delivery address — every order the customer '
                     .'places falls back to it.',
-                'latitude' => 'The latitude must be between -90 and 90.',
-                'longitude' => 'The longitude must be a number, for example 73.8567.',
             ]);
     }
 

@@ -29,6 +29,12 @@ final class OrderListResource extends JsonResource
             'is_open' => $this->status->isOpen(),
             'delivery_address' => $this->delivery_address,
             'delivery_date' => $this->delivery_date?->toDateString(),
+            // The whole price rule travels with every order, even in a list:
+            // rate × count = amount. The customer's billing screen adds the
+            // amounts up per day and per month, and shows the rate behind each
+            // one, so it never has to guess how a total was reached.
+            'tanker_count' => $this->tanker_count,
+            'tanker_rate' => (float) $this->tanker_rate,
             'order_amount' => (float) $this->order_amount,
             'customer_name' => $this->whenLoaded('customer', fn () => $this->customer?->full_name),
             'driver_name' => $this->whenLoaded('driver', fn () => $this->driver?->full_name),

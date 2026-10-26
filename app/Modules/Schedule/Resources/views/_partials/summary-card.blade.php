@@ -10,9 +10,15 @@
                 <tr><th class="ps-0">Window</th><td>{{ $schedule->slot?->label() ?? $schedule->slotLabel() ?? '—' }}</td></tr>
                 <tr><th class="ps-0">Tankers</th><td>{{ $schedule->tanker_count ?? '—' }}</td></tr>
                 <tr>
-                    <th class="ps-0">Amount</th>
-                    <td>{{ $schedule->order_amount === null ? 'Usual pricing' : '₹ '.number_format((float) $schedule->order_amount, 2) }}</td>
+                    <th class="ps-0">Rate per tanker</th>
+                    <td>{{ $schedule->tanker_rate === null ? 'From the tanker that delivers' : '₹ '.number_format((float) $schedule->tanker_rate, 2) }}</td>
                 </tr>
+                @if ($schedule->tanker_rate !== null)
+                    <tr>
+                        <th class="ps-0">Amount per delivery</th>
+                        <td class="f-w-600">₹ {{ number_format((float) $schedule->tanker_rate * ($schedule->tanker_count ?: 1), 2) }}</td>
+                    </tr>
+                @endif
                 <tr>
                     <th class="ps-0">Usual driver</th>
                     <td>{{ $schedule->preferredDriver?->full_name ?? 'Assigned by admin' }}</td>

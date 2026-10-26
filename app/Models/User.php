@@ -40,8 +40,6 @@ class User extends Authenticatable
         'mobile',
         'password',
         'address',
-        'latitude',
-        'longitude',
         'monthly_salary',
         'can_self_order',
         'status',
@@ -67,8 +65,6 @@ class User extends Authenticatable
             'can_self_order' => 'boolean',
             'system_reserve' => 'boolean',
             'monthly_salary' => 'decimal:2',
-            'latitude' => 'decimal:7',
-            'longitude' => 'decimal:7',
         ];
     }
 

@@ -21,11 +21,13 @@ final class PlaceOrderController
 
     public function __invoke(PlaceOrderRequest $request): JsonResponse
     {
-        // No vehicle is known yet, so this is the configured per-tanker price.
-        // Assignment re-prices it from the tanker that actually goes out.
-        $amount = $this->pricing->amountFor((int) $request->input('tanker_count'));
+        // No vehicle is known yet, and the rate per tanker belongs to the
+        // vehicle, so this prices at 0 — honestly: the price is not known until
+        // an admin assigns a driver, at which point assignment prices it from
+        // the tanker that actually goes out.
+        $price = $this->pricing->priceFrom(null, (int) $request->input('tanker_count'));
 
-        $order = $this->orders->place($request->orderData($amount), $request->user());
+        $order = $this->orders->place($request->orderData($price), $request->user());
 
         return ApiResponse::success(
             new OrderResource($order->load(['customer', 'statusLogs.changedBy'])),

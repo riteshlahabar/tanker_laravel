@@ -24,8 +24,19 @@
                         <td>{{ $order->tanker_count ? $order->tanker_count . ' tanker' . ($order->tanker_count > 1 ? 's' : '') : '—' }}</td>
                     </tr>
                     <tr>
-                        <th>Order amount</th>
-                        <td>₹ {{ number_format((float) $order->order_amount, 2) }}</td>
+                        <th>Rate per tanker</th>
+                        <td>₹ {{ number_format((float) $order->tanker_rate, 2) }}
+                            @if ($order->rate_fixed)
+                                <span class="badge badge-light-primary">Set by hand</span>
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Total amount</th>
+                        <td class="f-w-600">₹ {{ number_format((float) $order->order_amount, 2) }}
+                            <span class="f-light">({{ $order->tanker_count ?: 1 }} ×
+                                ₹ {{ number_format((float) $order->tanker_rate, 2) }})</span>
+                        </td>
                     </tr>
                     <tr>
                         <th>Driver</th>

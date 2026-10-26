@@ -11,6 +11,7 @@ use App\Modules\Order\Contracts\OrderServiceInterface;
 use App\Modules\Order\Exceptions\OrderAssignmentException;
 use App\Modules\Order\Models\Order;
 use App\Modules\Order\Requests\StoreOrderRequest;
+use App\Modules\Spot\Contracts\SpotRepositoryInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -29,6 +30,7 @@ final class OrderCreateController
         private readonly CustomerRepositoryInterface $customers,
         private readonly DriverRepositoryInterface $drivers,
         private readonly DeliverySlotRepositoryInterface $slots,
+        private readonly SpotRepositoryInterface $spots,
     ) {}
 
     public function form(): View
@@ -50,6 +52,10 @@ final class OrderCreateController
                 ->orderBy('first_name')
                 ->get(),
             'slots' => $this->slots->options(),
+            // The filling point the load is drawn from. Offered here as well as
+            // on the Assign screen so a phone order can be written down whole,
+            // and left optional because it is often decided on the route.
+            'spots' => $this->spots->usable(),
         ]);
     }
 
@@ -61,6 +67,7 @@ final class OrderCreateController
             $order = $this->orders->placeForDriver(
                 $request->orderData(),
                 $request->driverId(),
+                $request->spotId(),
                 $request->tankerRate(),
                 $request->user(),
             );

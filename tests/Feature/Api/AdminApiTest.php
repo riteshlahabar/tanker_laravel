@@ -334,9 +334,17 @@ final class AdminApiTest extends TestCase
             ->getJson(route('api.admin.settings.show'))
             ->assertOk()
             ->assertJsonStructure(['data' => [
-                'company_name', 'admin_whatsapp_number', 'default_monthly_salary',
-                'default_tanker_rate', 'daily_report_time',
-            ]]);
+                'company_name', 'admin_whatsapp_number',
+                // Still stored and still returned, though no screen offers a
+                // field for it any more — kept in the backend at the owner's
+                // request. Nothing reads it; the report is scheduled in
+                // routes/console.php.
+                'daily_report_time',
+            ]])
+            // These two are gone for good: the rate per tanker belongs to the
+            // vehicle that delivers, and the salary to the driver.
+            ->assertJsonMissingPath('data.default_tanker_rate')
+            ->assertJsonMissingPath('data.default_monthly_salary');
     }
 
     public function test_the_admin_can_update_settings_over_the_api(): void
@@ -345,9 +353,6 @@ final class AdminApiTest extends TestCase
             ->putJson(route('api.admin.settings.update'), [
                 'company_name' => 'Tanker Co',
                 'admin_whatsapp_number' => '919812345678',
-                'default_monthly_salary' => 17500,
-                'default_tanker_rate' => 1200,
-                'daily_report_time' => '23:59',
             ])
             ->assertOk()
             ->assertJsonPath('data.company_name', 'Tanker Co')
@@ -359,7 +364,7 @@ final class AdminApiTest extends TestCase
         $this->actingAsApi($this->adminUser)
             ->putJson(route('api.admin.settings.update'), ['company_name' => ''])
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['company_name', 'default_monthly_salary']);
+            ->assertJsonValidationErrors(['company_name']);
     }
 
     public function test_every_api_endpoint_rejects_an_anonymous_request(): void

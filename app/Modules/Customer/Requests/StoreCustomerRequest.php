@@ -33,8 +33,6 @@ class StoreCustomerRequest extends FormRequest
             // Order\Services\CustomerAddressResolver. A customer with no address
             // on file produces an address-less order the driver cannot find.
             'address' => ['required', 'string', 'max:1000'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             // Turned off for a standing-order customer: the office manages
             // their deliveries, so the app refuses a self-placed order.
             'can_self_order' => ['required', 'boolean'],
@@ -67,11 +65,6 @@ class StoreCustomerRequest extends FormRequest
 
             'address.required' => 'Enter the delivery address — every order the customer places falls back to it.',
             'address.max' => 'The delivery address cannot be longer than 1000 characters.',
-
-            'latitude.numeric' => 'The latitude must be a number, for example 18.5204.',
-            'latitude.between' => 'The latitude must be between -90 and 90.',
-            'longitude.numeric' => 'The longitude must be a number, for example 73.8567.',
-            'longitude.between' => 'The longitude must be between -180 and 180.',
 
             'can_self_order.required' => 'Choose whether this customer can place their own orders.',
             'can_self_order.boolean' => 'Choose whether this customer can place their own orders.',

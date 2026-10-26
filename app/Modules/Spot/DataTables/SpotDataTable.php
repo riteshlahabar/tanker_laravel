@@ -18,9 +18,9 @@ final class SpotDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->editColumn('refill_charge', fn (Spot $row): string => '₹ '.number_format((float) $row->refill_charge, 2))
             ->editColumn('address', fn (Spot $row): string => str($row->address ?? '—')->limit(60)->value())
-            ->addColumn('coordinates', fn (Spot $row): string => $row->hasCoordinates()
-                ? $row->latitude.', '.$row->longitude
-                : '<span class="badge badge-light-secondary">Not set</span>')
+            ->editColumn('water_type', fn (Spot $row): string => $row->water_type ?: '—')
+            ->editColumn('contact_person', fn (Spot $row): string => $row->contact_person ?: '—')
+            ->editColumn('contact_mobile', fn (Spot $row): string => $row->contact_mobile ?: '—')
             ->addColumn('availability', fn (Spot $row): string => $row->is_available
                 ? '<span class="badge badge-light-success">Available</span>'
                 : '<span class="badge badge-light-danger">Unavailable</span>')
@@ -35,7 +35,7 @@ final class SpotDataTable extends DataTable
                 'delete' => 'admin.spot.destroy',
                 'data' => $row,
             ])->render())
-            ->rawColumns(['coordinates', 'availability', 'status', 'action']);
+            ->rawColumns(['availability', 'status', 'action']);
     }
 
     public function query(Spot $model): QueryBuilder
@@ -57,7 +57,9 @@ final class SpotDataTable extends DataTable
             ->addColumn(['data' => 'name', 'title' => __('Filling Point Name')])
             ->addColumn(['data' => 'address', 'title' => __('Address')])
             ->addColumn(['data' => 'refill_charge', 'title' => __('Refill Charge')])
-            ->addColumn(['data' => 'coordinates', 'title' => __('Coordinates'), 'orderable' => false, 'searchable' => false])
+            ->addColumn(['data' => 'water_type', 'title' => __('Water Type')])
+            ->addColumn(['data' => 'contact_person', 'title' => __('Contact Person')])
+            ->addColumn(['data' => 'contact_mobile', 'title' => __('Contact Mobile')])
             ->addColumn(['data' => 'availability', 'title' => __('Availability'), 'orderable' => false, 'searchable' => false])
             ->addColumn(['data' => 'status', 'title' => __('Status'), 'orderable' => false, 'searchable' => false])
             ->addColumn(['data' => 'action', 'title' => __('Action'), 'orderable' => false, 'searchable' => false])

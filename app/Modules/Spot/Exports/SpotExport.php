@@ -39,7 +39,7 @@ final class SpotExport implements FromQuery, ShouldAutoSize, WithHeadings, WithM
     {
         return [
             'Filling Point Name', 'Address', 'Refill Charge', 'Water Type',
-            'Latitude', 'Longitude', 'Contact Person', 'Contact Mobile',
+            'Contact Person', 'Contact Mobile',
             'Availability', 'Status',
         ];
     }
@@ -55,8 +55,6 @@ final class SpotExport implements FromQuery, ShouldAutoSize, WithHeadings, WithM
             $row->address,
             (float) $row->refill_charge,
             $row->water_type,
-            $row->latitude,
-            $row->longitude,
             $row->contact_person,
             $row->contact_mobile,
             $row->is_available ? 'Available' : 'Unavailable',

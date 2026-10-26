@@ -11,8 +11,8 @@
     placeholder="— No tanker —" help="Only tankers not already assigned to another driver are listed." />
 
 <x-form.text name="monthly_salary" label="Monthly Salary (₹)" type="number"
-    :value="$driver?->monthly_salary ?? ($defaultSalary ?? 15000)"
-    help="What this driver is paid each month. Not divided across deliveries."
+    :value="$driver?->monthly_salary"
+    help="What this driver is paid each month. Entered per driver — there is no global default."
     :attrs="['step' => '0.01', 'min' => 0]" required />
 
 <x-form.status :value="$driver?->status ?? true" />

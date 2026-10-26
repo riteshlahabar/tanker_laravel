@@ -22,8 +22,6 @@ final class UpdateSettingRequest extends FormRequest
         return [
             'company_name' => ['required', 'string', 'max:255'],
             'admin_whatsapp_number' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{10,15}$/'],
-            'default_monthly_salary' => ['required', 'numeric', 'min:0', 'max:9999999.99'],
-            'daily_report_time' => ['required', 'date_format:H:i'],
         ];
     }
 

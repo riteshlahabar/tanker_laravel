@@ -197,18 +197,19 @@ final class ScheduledOrderGenerator implements ScheduledOrderGeneratorInterface
             'customer_id' => $schedule->customer_id,
             'delivery_schedule_id' => $schedule->id,
             'delivery_address' => $schedule->delivery_address,
-            'latitude' => $schedule->latitude,
-            'longitude' => $schedule->longitude,
             'delivery_date' => $date->toDateString(),
             'delivery_slot_id' => $schedule->delivery_slot_id,
             'delivery_time' => $schedule->delivery_time,
             'tanker_count' => $schedule->tanker_count,
-            // A schedule may fix its own price; otherwise the usual rule
-            // applies and assignment re-prices it from the vehicle that goes.
-            'order_amount' => $schedule->order_amount !== null
-                ? (float) $schedule->order_amount
-                : $this->pricing->amountFor($schedule->tanker_count),
-            'amount_fixed' => $schedule->order_amount !== null,
+            // A routine may carry its own rate per tanker; otherwise the usual
+            // rule applies and assignment prices the order from the vehicle
+            // that goes out. Either way the rate and the total are stored
+            // together, so the order explains its own arithmetic.
+            ...$this->pricing->priceOn(
+                (float) ($schedule->tanker_rate ?? 0),
+                $schedule->tanker_count,
+            ),
+            'rate_fixed' => $schedule->tanker_rate !== null,
             'notes' => $schedule->notes,
         ];
 

@@ -35,7 +35,9 @@ class StoreDeliveryScheduleRequest extends FormRequest
             'weekdays.*' => ['integer', 'between:1,7'],
 
             'tanker_count' => ['nullable', 'integer', 'min:1', 'max:20'],
-            'order_amount' => ['nullable', 'numeric', 'min:0', 'max:9999999.99'],
+            // The routine's own rate per tanker. Left empty, each generated
+            // order prices from the vehicle that goes out.
+            'tanker_rate' => ['nullable', 'numeric', 'min:0', 'max:9999999.99'],
 
             // One or the other must be named: the six-hour notice has to count
             // back from something concrete.
@@ -46,8 +48,6 @@ class StoreDeliveryScheduleRequest extends FormRequest
             'delivery_time' => ['nullable', 'required_without:delivery_slot_id', 'date_format:H:i'],
 
             'delivery_address' => ['nullable', 'string', 'max:1000'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
 
             'preferred_driver_id' => [
                 'nullable', 'integer',

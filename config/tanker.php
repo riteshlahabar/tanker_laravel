@@ -8,6 +8,5 @@ declare(strict_types=1);
  */
 
 return [
-    'default_monthly_salary' => env('TANKER_DEFAULT_MONTHLY_SALARY', 15000),
     'currency_symbol' => '₹',
 ];

@@ -16,10 +16,17 @@ use App\Modules\DeliverySlot\Contracts\DeliverySlotRepositoryInterface;
 trait BuildsScheduleForm
 {
     /**
-     * @return array<string, array<int|string, string>>
+     * @return array<string, array<int|string, mixed>>
      */
     private function formOptions(): array
     {
+        $drivers = User::query()
+            ->active()
+            ->role(RoleEnum::Driver->value)
+            ->with('currentAssignment.tanker:id,tanker_rate')
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name']);
+
         return [
             'customers' => app(CustomerRepositoryInterface::class)->scopedQuery()
                 ->where('status', true)
@@ -34,13 +41,18 @@ trait BuildsScheduleForm
                 + app(DeliverySlotRepositoryInterface::class)->options(),
 
             'drivers' => ['' => 'Leave for the admin to assign']
-                + User::query()
-                    ->active()
-                    ->role(RoleEnum::Driver->value)
-                    ->orderBy('first_name')
-                    ->get(['id', 'first_name', 'last_name'])
+                + $drivers
                     ->mapWithKeys(fn (User $d): array => [$d->id => $d->full_name])
                     ->all(),
+
+            // What each driver's current tanker charges for a load, so the
+            // form can fill the rate in the moment one is chosen — the same
+            // behaviour as the New Order screen.
+            'driverRates' => $drivers
+                ->mapWithKeys(fn (User $d): array => [
+                    $d->id => (float) ($d->currentAssignment?->tanker?->tanker_rate ?? 0),
+                ])
+                ->all(),
         ];
     }
 }

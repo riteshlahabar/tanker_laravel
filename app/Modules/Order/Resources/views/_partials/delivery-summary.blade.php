@@ -23,8 +23,12 @@
                     <td>{{ $order->tanker_count ? $order->tanker_count . ' tanker' . ($order->tanker_count > 1 ? 's' : '') : '—' }}</td>
                 </tr>
                 <tr>
-                    <th>Amount</th>
-                    <td>₹ {{ number_format((float) $order->order_amount, 2) }}</td>
+                    <th>Rate per tanker</th>
+                    <td>₹ {{ number_format((float) $order->tanker_rate, 2) }}</td>
+                </tr>
+                <tr>
+                    <th>Total</th>
+                    <td class="f-w-600">₹ {{ number_format((float) $order->order_amount, 2) }}</td>
                 </tr>
             </tbody>
         </table>

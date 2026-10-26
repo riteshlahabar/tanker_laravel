@@ -2,6 +2,10 @@
     $driverOptions = $drivers->mapWithKeys(fn($d) => [
         $d->id => $d->full_name . ' — ' . ($d->currentAssignment?->tanker?->label() ?? 'no tanker'),
     ])->all();
+
+    $spotOptions = $spots->mapWithKeys(fn($s) => [
+        $s->id => $s->name . ' (₹ ' . number_format((float) $s->refill_charge, 2) . ')',
+    ])->all();
 @endphp
 
 <x-form.select name="customer_id" label="Customer"
@@ -35,6 +39,10 @@
     <small class="f-light" id="order-total-note">Rate per tanker × number of tankers.</small>
 </div>
 
-<x-form.textarea name="notes" label="Notes" rows="2" />
+<x-form.select name="spot_id" label="Filling Point" :options="$spotOptions"
+    placeholder="— Decide on the route —"
+    help="Where this load is filled. Only available points are listed; its refill charge is saved onto the order." />
+
+<x-form.textarea name="notes" label="Notes" rows="2" width="col-md-6" />
 
 <x-form.actions :cancel="route('admin.order.index')" label="Place Order" />

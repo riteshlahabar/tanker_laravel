@@ -49,8 +49,7 @@ final class OrderLifecycleTest extends TestCase
             'vehicle_name' => 'Water Tanker 1', 'vehicle_number' => 'MH12AB1234', 'capacity_litres' => 5000,
         ]);
         $this->spot = Spot::query()->create([
-            'name' => 'Hadapsar Borewell', 'refill_charge' => 400,
-            'latitude' => 18.5204, 'longitude' => 73.8567,
+            'name' => 'Hadapsar Borewell', 'refill_charge' => 400, 'address' => 'Hadapsar, Pune',
         ]);
     }
 
@@ -150,7 +149,13 @@ final class OrderLifecycleTest extends TestCase
 
     public function test_a_driver_without_a_tanker_cannot_be_assigned(): void
     {
+        // The admin form names a driver, so placing an order needs one holding
+        // a tanker. Take the tanker away afterwards: this is the driver who
+        // turned up without a vehicle, which is what assignment must refuse.
         $order = $this->placeOrder();
+
+        $this->tanker->assignments()->delete();
+        $this->driver->refresh();
 
         $this->expectException(OrderAssignmentException::class);
         $this->expectExceptionMessage('no tanker assigned');
@@ -255,12 +260,11 @@ final class OrderLifecycleTest extends TestCase
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    /**
      * The admin form names the driver, because the price of the order is the
      * rate of the tanker that driver holds. So the payload needs a driver who
      * actually has one.
+     *
+     * @return array<string, mixed>
      */
     private function orderPayload(): array
     {
@@ -292,16 +296,6 @@ final class OrderLifecycleTest extends TestCase
     private function placeOrder(): Order
     {
         return $this->service()->place($this->orderPayload(), $this->adminUser);
-    }
-
-    private function giveDriverATanker(): void
-    {
-        $this->tanker->assignments()->create([
-            'driver_id' => $this->driver->id,
-            'assigned_from' => now()->toDateString(),
-        ]);
-
-        $this->driver->refresh();
     }
 
     private function service(): OrderServiceInterface

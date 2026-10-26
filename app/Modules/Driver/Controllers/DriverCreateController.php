@@ -25,7 +25,6 @@ final class DriverCreateController
 
         return view('driver::create', [
             'tankerOptions' => $this->tankers->assignableOptions(),
-            'defaultSalary' => config('tanker.default_monthly_salary'),
         ]);
     }
 

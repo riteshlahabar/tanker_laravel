@@ -74,12 +74,10 @@ final class OrderReassignTest extends TestCase
 
         $this->spot = Spot::query()->create([
             'name' => 'Hadapsar Borewell', 'refill_charge' => 400,
-            'latitude' => 18.5204, 'longitude' => 73.8567,
         ]);
 
         $this->otherSpot = Spot::query()->create([
             'name' => 'Wagholi Well', 'refill_charge' => 550,
-            'latitude' => 18.5800, 'longitude' => 73.9800,
         ]);
     }
 

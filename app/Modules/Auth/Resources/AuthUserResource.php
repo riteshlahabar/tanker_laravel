@@ -26,8 +26,6 @@ final class AuthUserResource extends JsonResource
             'email' => $this->email,
             'mobile' => $this->mobile,
             'address' => $this->address,
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
             'role' => $this->roleName(),
             'status' => (bool) $this->status,
             'can_self_order' => $this->canSelfOrder(),

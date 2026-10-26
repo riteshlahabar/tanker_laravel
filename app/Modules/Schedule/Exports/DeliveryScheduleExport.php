@@ -40,7 +40,7 @@ final class DeliveryScheduleExport implements FromQuery, ShouldAutoSize, WithHea
     public function headings(): array
     {
         return [
-            'Customer', 'Mobile', 'Pattern', 'Window', 'Tankers', 'Fixed Amount',
+            'Customer', 'Mobile', 'Pattern', 'Window', 'Tankers', 'Rate per Tanker',
             'Usual Driver', 'Starts', 'Ends', 'Next Delivery', 'Paused', 'Status',
         ];
     }
@@ -57,8 +57,10 @@ final class DeliveryScheduleExport implements FromQuery, ShouldAutoSize, WithHea
             $row->patternLabel(),
             $row->slot?->label() ?? $row->slotLabel(),
             $row->tanker_count,
-            // Raw number, so the spreadsheet keeps a real numeric value.
-            $row->order_amount === null ? null : (float) $row->order_amount,
+            // Raw number, so the spreadsheet keeps a real numeric value. Null
+            // means the routine has no rate of its own and each delivery is
+            // priced from the tanker that goes out.
+            $row->tanker_rate === null ? null : (float) $row->tanker_rate,
             $row->preferredDriver?->full_name ?? 'Assigned by admin',
             $row->start_date?->toDateString(),
             $row->end_date?->toDateString(),

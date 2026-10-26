@@ -26,8 +26,6 @@ final class UpdateProfileRequest extends FormRequest
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:1000'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ];
     }
 }

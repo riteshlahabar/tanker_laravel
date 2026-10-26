@@ -29,20 +29,8 @@ final class SpotRepository extends BaseRepository implements SpotRepositoryInter
             ->usable()
             ->orderBy('name')
             ->get([
-                'id', 'name', 'address', 'latitude', 'longitude', 'refill_charge',
+                'id', 'name', 'address', 'refill_charge',
                 'water_type', 'contact_person', 'contact_mobile', 'is_available', 'status',
             ]);
-    }
-
-    /**
-     * @return Collection<int, Spot>
-     */
-    public function nearest(float $latitude, float $longitude, int $limit = 10): Collection
-    {
-        return $this->model->newQuery()
-            ->usable()
-            ->nearest($latitude, $longitude)
-            ->limit($limit)
-            ->get();
     }
 }

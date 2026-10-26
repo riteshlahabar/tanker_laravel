@@ -6,19 +6,16 @@
     placeholder="e.g. 400.00" help="One-time charge to fill a tanker here." :attrs="['step' => '0.01', 'min' => 0]"
     required />
 
-<x-form.textarea name="address" label="Address" :value="$spot?->address" rows="2" />
-
-<x-form.text name="latitude" label="Latitude" :value="$spot?->latitude" placeholder="e.g. 18.5204"
-    :attrs="['step' => 'any']" />
-
-<x-form.text name="longitude" label="Longitude" :value="$spot?->longitude" placeholder="e.g. 73.8567"
-    help="Needed for the driver's nearest filling point list." :attrs="['step' => 'any']" />
+{{-- One column, beside the rest of the details: the address is a line or two,
+     and a full-width box for it pushed every other field down a row. --}}
+<x-form.textarea name="address" label="Address" :value="$spot?->address" rows="2" width="col-md-6" required />
 
 <x-form.text name="water_type" label="Water Type" :value="$spot?->water_type" placeholder="e.g. Borewell, RO" />
 
-<x-form.text name="contact_person" label="Contact Person" :value="$spot?->contact_person" />
+<x-form.text name="contact_person" label="Contact Person" :value="$spot?->contact_person" required />
 
-<x-form.text name="contact_mobile" label="Contact Mobile" :value="$spot?->contact_mobile" placeholder="e.g. 9876543210" />
+<x-form.text name="contact_mobile" label="Contact Mobile" :value="$spot?->contact_mobile"
+    placeholder="e.g. 9876543210" help="Who the driver rings if the point is shut or the queue is long." required />
 
 <x-form.select name="is_available" label="Availability" :value="$spot?->is_available ?? true"
     :options="[1 => 'Available', 0 => 'Unavailable']" required />

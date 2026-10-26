@@ -16,11 +16,4 @@ interface SpotRepositoryInterface extends BaseRepositoryInterface
      * @return Collection<int, Spot>
      */
     public function usable(): Collection;
-
-    /**
-     * Usable spots ordered by distance from a point.
-     *
-     * @return Collection<int, Spot>
-     */
-    public function nearest(float $latitude, float $longitude, int $limit = 10): Collection;
 }

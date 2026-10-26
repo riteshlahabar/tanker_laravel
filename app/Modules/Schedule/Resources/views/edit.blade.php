@@ -27,3 +27,7 @@
         </div>
     </div>
 @endsection
+
+@section('scripts')
+    @include('schedule::_partials.amount-script')
+@endsection

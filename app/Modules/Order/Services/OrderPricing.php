@@ -7,11 +7,11 @@ namespace App\Modules\Order\Services;
 use App\Modules\Tanker\Models\Tanker;
 
 /**
- * What the customer pays. Water is sold by the tanker, not by the litre, so
- * there is exactly one unit in the system — a price per tanker-load — and the
- * whole model is:
+ * What the customer pays. Water is sold by the tanker-load, never by the
+ * litre, so there is exactly one unit of price in the system — a rate per
+ * tanker — and the whole model is one line:
  *
- *     rate × tanker_count = order_amount
+ *     tanker_rate × tanker_count = order_amount
  *
  * The rate comes from **one place only**: `tankers.tanker_rate`, the rate on
  * the vehicle that delivers. There is no global default — the owner's tankers
@@ -25,15 +25,39 @@ use App\Modules\Tanker\Models\Tanker;
  * an admin assigns a driver, at which point `OrderService::assign()` prices it
  * from the vehicle that actually goes out.
  *
- * An order whose amount was *given* rather than calculated — the admin typing
- * a rate on the order form, or a standing order carrying its own figure —
- * holds `amount_fixed` and is never re-priced.
+ * An order whose rate was *given* rather than read off the vehicle — the admin
+ * typing a different rate on the order form — holds `rate_fixed` and is never
+ * re-priced.
  */
 final class OrderPricing
 {
+    /**
+     * Both halves of the rule, so a caller can never store a total that
+     * disagrees with the rate beside it.
+     *
+     * @return array{tanker_rate: float, order_amount: float}
+     */
+    public function priceOn(float $rate, ?int $tankerCount): array
+    {
+        return [
+            'tanker_rate' => round($rate, 2),
+            'order_amount' => round($rate * $this->countFor($tankerCount), 2),
+        ];
+    }
+
+    /**
+     * The same, priced from a vehicle rather than a typed figure.
+     *
+     * @return array{tanker_rate: float, order_amount: float}
+     */
+    public function priceFrom(?Tanker $tanker, ?int $tankerCount): array
+    {
+        return $this->priceOn($this->rateFor($tanker), $tankerCount);
+    }
+
     public function amountFor(?int $tankerCount, ?Tanker $tanker = null): float
     {
-        return round($this->rateFor($tanker) * $this->countFor($tankerCount), 2);
+        return $this->priceFrom($tanker, $tankerCount)['order_amount'];
     }
 
     /**
@@ -42,7 +66,7 @@ final class OrderPricing
      */
     public function amountForRate(float $rate, ?int $tankerCount): float
     {
-        return round($rate * $this->countFor($tankerCount), 2);
+        return $this->priceOn($rate, $tankerCount)['order_amount'];
     }
 
     public function rateFor(?Tanker $tanker): float

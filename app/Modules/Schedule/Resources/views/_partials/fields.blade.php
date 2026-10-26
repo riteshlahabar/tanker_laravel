@@ -9,7 +9,7 @@
 @include('schedule::_partials.pattern-fields', ['schedule' => $schedule])
 @include('schedule::_partials.delivery-fields', ['schedule' => $schedule])
 
-<x-form.textarea name="notes" label="Notes" :value="$schedule?->notes" rows="2"
+<x-form.textarea name="notes" label="Notes" :value="$schedule?->notes" rows="2" width="col-md-6"
     placeholder="Anything the driver should know" />
 
 <x-form.status :value="$schedule?->status ?? true" />

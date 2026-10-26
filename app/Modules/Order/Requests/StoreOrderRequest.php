@@ -39,6 +39,12 @@ final class StoreOrderRequest extends FormRequest
             // the order is the rate of the tanker they hold, so there is no
             // amount to show until one is picked.
             'driver_id' => ['required', 'integer', Rule::exists('users', 'id')->whereNull('deleted_at')],
+            // The filling point this load is drawn from. Optional: it is often
+            // decided on the route, which is what the Assign screen allows too.
+            'spot_id' => [
+                'nullable', 'integer',
+                Rule::exists('spots', 'id')->whereNull('deleted_at'),
+            ],
             'tanker_count' => ['nullable', 'integer', 'min:1', 'max:20'],
             // Pre-filled from that driver's tanker and editable, for the day a
             // load is sold at something other than the vehicle's usual rate.
@@ -48,25 +54,33 @@ final class StoreOrderRequest extends FormRequest
     }
 
     /**
-     * The order's own columns. `driver_id` and `tanker_rate` are not among
-     * them: the driver is applied by assignment, which also snapshots the
-     * tanker, and the rate only decides what the amount becomes.
+     * The order's own columns. `driver_id`, `spot_id` and `tanker_rate` are
+     * not among them: all three are applied by assignment, which snapshots the
+     * tanker and the filling point's refill charge, and the rate decides what
+     * the total becomes.
      *
-     * No `order_amount` either — an admin-entered order is priced the same way
-     * every other order is, from the tanker that goes out.
+     * There is no amount field to carry — an admin-entered order is priced the
+     * same way every other order is, from the rate per tanker.
      *
      * @return array<string, mixed>
      */
     public function orderData(): array
     {
         return collect($this->validated())
-            ->except(['driver_id', 'tanker_rate'])
+            ->except(['driver_id', 'spot_id', 'tanker_rate'])
             ->all();
     }
 
     public function driverId(): int
     {
         return (int) $this->validated('driver_id');
+    }
+
+    public function spotId(): ?int
+    {
+        $spot = $this->validated('spot_id');
+
+        return $spot === null || $spot === '' ? null : (int) $spot;
     }
 
     public function tankerRate(): ?float

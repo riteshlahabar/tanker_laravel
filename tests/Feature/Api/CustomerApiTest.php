@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Modules\Core\Enums\OrderStatusEnum;
 use App\Modules\Core\Enums\RoleEnum;
 use App\Modules\Order\Models\Order;
-use App\Modules\Setting\Contracts\SettingRepositoryInterface;
 use App\Modules\Spot\Models\Spot;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,8 +34,6 @@ final class CustomerApiTest extends TestCase
 
     public function test_a_customer_can_place_an_order(): void
     {
-        app(SettingRepositoryInterface::class)->put('default_tanker_rate', '1200');
-
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
                 'delivery_address' => 'Kothrud, Pune',
@@ -46,46 +43,42 @@ final class CustomerApiTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.status', 'pending')
-            // json_encode emits an integral float as 1200, not 1200.0 — the
-            // Flutter model must read money as `num` and call toDouble().
-            ->assertJsonPath('data.order_amount', 1200);
+            // The booking carries no price yet, and that is the rule, not a
+            // gap: the rate per tanker belongs to the vehicle, and no vehicle
+            // is chosen until an admin assigns a driver. json_encode emits an
+            // integral float as 0, not 0.0 — the Flutter model must read money
+            // as `num` and call toDouble().
+            ->assertJsonPath('data.order_amount', 0)
+            ->assertJsonPath('data.tanker_rate', 0)
+            ->assertJsonPath('data.tanker_count', 1);
 
         $this->assertDatabaseHas('orders', [
             'customer_id' => $this->customer->id,
-            'order_amount' => 1200,
+            'tanker_count' => 1,
+            'rate_fixed' => false,
         ]);
     }
 
     public function test_a_booking_defaults_to_the_address_entered_when_the_customer_was_added(): void
     {
-        $this->customer->update(['latitude' => 18.5074, 'longitude' => 73.8077]);
-
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
                 'delivery_date' => now()->toDateString(),
                 'tanker_count' => 1,
             ])
             ->assertCreated()
-            ->assertJsonPath('data.delivery_address', 'Kothrud, Pune')
-            // Delivering to the registered address, so the driver gets its pin.
-            ->assertJsonPath('data.latitude', 18.5074)
-            ->assertJsonPath('data.longitude', 73.8077);
+            ->assertJsonPath('data.delivery_address', 'Kothrud, Pune');
     }
 
-    public function test_a_one_off_address_is_kept_and_does_not_borrow_the_customers_coordinates(): void
+    public function test_a_one_off_address_is_kept_rather_than_overwritten_by_the_registered_one(): void
     {
-        $this->customer->update(['latitude' => 18.5074, 'longitude' => 73.8077]);
-
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
                 'delivery_address' => 'Site office, Wagholi',
                 'delivery_date' => now()->toDateString(),
             ])
             ->assertCreated()
-            ->assertJsonPath('data.delivery_address', 'Site office, Wagholi')
-            // The home pin would send the driver to the wrong place.
-            ->assertJsonPath('data.latitude', null)
-            ->assertJsonPath('data.longitude', null);
+            ->assertJsonPath('data.delivery_address', 'Site office, Wagholi');
     }
 
     public function test_the_order_is_always_placed_for_the_signed_in_customer(): void
@@ -104,10 +97,8 @@ final class CustomerApiTest extends TestCase
         $this->assertSame($this->customer->id, Order::query()->firstOrFail()->customer_id);
     }
 
-    public function test_per_tanker_pricing_multiplies_by_the_number_ordered(): void
+    public function test_the_number_of_tankers_is_carried_and_the_price_waits_for_a_vehicle(): void
     {
-        app(SettingRepositoryInterface::class)->put('default_tanker_rate', '900');
-
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
                 'delivery_address' => 'Kothrud, Pune',
@@ -115,16 +106,15 @@ final class CustomerApiTest extends TestCase
                 'tanker_count' => 3,
             ])
             ->assertCreated()
-            // 3 × 900. There is one unit in the system and the count always
-            // multiplies it.
-            ->assertJsonPath('data.order_amount', 2700)
-            ->assertJsonPath('data.tanker_count', 3);
+            ->assertJsonPath('data.tanker_count', 3)
+            // Three loads at a rate nobody has chosen yet is still 0. The
+            // multiplication itself is covered where it happens, in
+            // TankerPricingTest's assignment cases.
+            ->assertJsonPath('data.order_amount', 0);
     }
 
     public function test_no_configured_rate_prices_the_order_at_zero(): void
     {
-        app(SettingRepositoryInterface::class)->put('default_tanker_rate', '0');
-
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
                 'delivery_address' => 'Kothrud, Pune',

@@ -1,6 +1,7 @@
-@props(['editing' => false])
+@props(['editing' => false, 'width' => 'col-md-6'])
 
-<x-form.text name="password" label="App Password" type="password" :required="! $editing"
+<x-form.text name="password" label="App Password" type="password" :required="! $editing" :width="$width"
     :help="$editing ? 'Leave blank to keep the current password.' : 'At least 8 characters.'" />
 
-<x-form.text name="password_confirmation" label="Confirm Password" type="password" :required="! $editing" />
+<x-form.text name="password_confirmation" label="Confirm Password" type="password" :required="! $editing"
+    :width="$width" />

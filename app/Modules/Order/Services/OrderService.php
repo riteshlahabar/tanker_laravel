@@ -73,24 +73,29 @@ final class OrderService extends BaseService implements OrderServiceInterface
      *
      * Deliberately composed from the two existing paths rather than a third
      * one of its own: the order gets both status-log rows (placed, then
-     * assigned), the assignment guards still run, and the spot is left for the
-     * route the same way an auto-assigned standing order leaves it. This is
-     * the idiom `ScheduledOrderGenerator::autoAssign()` already uses.
+     * assigned), the assignment guards still run, and naming a filling point
+     * here snapshots its refill charge exactly as the Assign screen does.
+     * This is the idiom `ScheduledOrderGenerator::autoAssign()` already uses.
      *
      * @param  array<string, mixed>  $data
      */
-    public function placeForDriver(array $data, int $driverId, ?float $tankerRate, User $actor): Order
-    {
-        $order = $this->assign($this->place($data, $actor), $driverId, null, $actor);
+    public function placeForDriver(
+        array $data,
+        int $driverId,
+        ?int $spotId,
+        ?float $tankerRate,
+        User $actor,
+    ): Order {
+        $order = $this->assign($this->place($data, $actor), $driverId, $spotId, $actor);
 
         return $this->applyTypedRate($order, $tankerRate);
     }
 
     /**
-     * A rate the admin changed on the form is the figure of record, so it
-     * fixes the amount and stops a later handover re-pricing it. A rate left
-     * at the vehicle's own is not an override at all — the amount assignment
-     * already calculated is identical, and leaving `amount_fixed` false keeps
+     * A rate the admin changed on the form is the figure of record, so it is
+     * written onto the order and stops a later handover re-pricing it. A rate
+     * left at the vehicle's own is not an override at all — assignment has
+     * already stored exactly that rate — and leaving `rate_fixed` false keeps
      * a reassignment free to re-price from whichever tanker goes out.
      */
     private function applyTypedRate(Order $order, ?float $tankerRate): Order
@@ -102,8 +107,8 @@ final class OrderService extends BaseService implements OrderServiceInterface
         }
 
         $order->update([
-            'order_amount' => $this->pricing->amountForRate($tankerRate, $order->tanker_count),
-            'amount_fixed' => true,
+            ...$this->pricing->priceOn($tankerRate, $order->tanker_count),
+            'rate_fixed' => true,
         ]);
 
         return $order->refresh();
@@ -147,20 +152,23 @@ final class OrderService extends BaseService implements OrderServiceInterface
      * Water is priced per tanker-load and the owner's tankers are not all the
      * same, so the amount is only final once we know which vehicle goes out.
      *
-     * Returns nothing for an order whose amount was *given* rather than
-     * calculated — an admin typing it by hand, or a standing order carrying
-     * its own figure. Re-pricing those would overwrite the owner's own number,
-     * which is why `amount_fixed` exists.
+     * Returns nothing for an order whose rate was *given* rather than read off
+     * a vehicle — an admin typing a different rate on the order form. Re-pricing
+     * those would overwrite the owner's own number, which is why `rate_fixed`
+     * exists.
+     *
+     * Both columns move together, so the rate on an order always explains the
+     * total beside it.
      *
      * @return array<string, float>
      */
     private function priceFor(Order $order, Tanker $tanker): array
     {
-        if ($order->amount_fixed) {
+        if ($order->rate_fixed) {
             return [];
         }
 
-        return ['order_amount' => $this->pricing->amountFor($order->tanker_count, $tanker)];
+        return $this->pricing->priceFrom($tanker, $order->tanker_count);
     }
 
     public function reassign(

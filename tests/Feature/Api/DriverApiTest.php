@@ -52,8 +52,7 @@ final class DriverApiTest extends TestCase
         $this->driver->refresh();
 
         $this->spot = Spot::query()->create([
-            'name' => 'Hadapsar Borewell', 'refill_charge' => 400,
-            'latitude' => 18.5204, 'longitude' => 73.8567,
+            'name' => 'Hadapsar Borewell', 'refill_charge' => 400, 'address' => 'Hadapsar',
         ]);
     }
 
@@ -196,21 +195,19 @@ final class DriverApiTest extends TestCase
             ->assertJsonMissingPath('data.range.earning');
     }
 
-    public function test_nearest_spots_come_back_closest_first_with_a_distance(): void
+    public function test_the_filling_point_list_comes_back_by_name(): void
     {
-        Spot::query()->create([
-            'name' => 'Far Spot', 'refill_charge' => 300, 'latitude' => 19.0760, 'longitude' => 72.8777,
-        ]);
+        Spot::query()->create(['name' => 'Alandi Well', 'refill_charge' => 300, 'address' => 'Alandi']);
 
         $response = $this->actingAsApi($this->driver)
-            ->getJson(route('api.spots.nearby', ['latitude' => 18.5204, 'longitude' => 73.8567]))
+            ->getJson(route('api.spots.index'))
             ->assertOk();
 
-        $names = array_column($response->json('data'), 'name');
-
-        $this->assertSame('Hadapsar Borewell', $names[0]);
-        $this->assertSame('Far Spot', $names[1]);
-        $this->assertEquals(0, $response->json('data.0.distance_km'));
+        // Alphabetical, which is the order the repository asks for. It used to
+        // be "nearest first", computed from coordinates nobody ever filled in,
+        // so in practice the driver was shown an empty list and fell back to
+        // this one.
+        $this->assertSame(['Alandi Well', 'Hadapsar Borewell'], array_column($response->json('data'), 'name'));
     }
 
     public function test_the_usable_spot_list_carries_every_field_the_resource_promises(): void
@@ -231,16 +228,12 @@ final class DriverApiTest extends TestCase
             ->assertJsonPath('data.0.water_type', 'Borewell')
             ->assertJsonPath('data.0.contact_person', 'Manoj')
             ->assertJsonPath('data.0.contact_mobile', '9578123456')
-            ->assertJsonPath('data.0.latitude', 18.5204)
-            ->assertJsonPath('data.0.longitude', 73.8567);
-    }
-
-    public function test_nearby_spots_need_coordinates(): void
-    {
-        $this->actingAsApi($this->driver)
-            ->getJson(route('api.spots.nearby'))
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors(['latitude', 'longitude']);
+            ->assertJsonPath('data.0.address', 'Hadapsar')
+            // No coordinates on the wire any more: the driver navigates by the
+            // address and rings the contact mobile, and the nearest-point
+            // endpoint that needed a pin is gone with the columns.
+            ->assertJsonMissingPath('data.0.latitude')
+            ->assertJsonMissingPath('data.0.longitude');
     }
 
     public function test_a_driver_cannot_reach_customer_or_admin_endpoints(): void

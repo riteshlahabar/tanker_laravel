@@ -31,16 +31,15 @@ final class DeliveryScheduleResource extends JsonResource
             'pattern' => $this->patternLabel(),
 
             'tanker_count' => $this->tanker_count,
-            // Money is a num on the wire — may arrive as an int.
-            'order_amount' => $this->order_amount === null ? null : (float) $this->order_amount,
+            // Money is a num on the wire — may arrive as an int. Null means
+            // "price each order from the tanker that delivers it".
+            'tanker_rate' => $this->tanker_rate === null ? null : (float) $this->tanker_rate,
 
             'delivery_slot_id' => $this->delivery_slot_id,
             'delivery_slot' => $this->slot?->label(),
             'delivery_time' => $this->delivery_time,
 
             'delivery_address' => $this->delivery_address ?: $this->customer?->address,
-            'latitude' => $this->latitude === null ? null : (float) $this->latitude,
-            'longitude' => $this->longitude === null ? null : (float) $this->longitude,
 
             'preferred_driver_id' => $this->preferred_driver_id,
             'preferred_driver' => $this->preferredDriver?->full_name,
