@@ -30,10 +30,10 @@
         <form class="d-flex gap-2 flex-wrap" action="{{ route('admin.whatsapp.scan.action') }}" method="POST"
             onsubmit="return confirm('This asks the service to re-pair. Continue?')">
             @csrf
-            <button class="btn btn-light" type="submit" name="action" value="restart">
+            <button class="btn btn-light btn-icon" type="submit" name="action" value="restart">
                 <i data-feather="refresh-cw"></i> Restart service
             </button>
-            <button class="btn btn-outline-danger" type="submit" name="action" value="logout">
+            <button class="btn btn-outline-danger btn-icon" type="submit" name="action" value="logout">
                 <i data-feather="log-out"></i> Log out
             </button>
         </form>

@@ -30,7 +30,7 @@
                     @enderror
                 </div>
             </div>
-            <button class="btn btn-primary mt-3" type="submit" @disabled(! $status->connected)>
+            <button class="btn btn-primary btn-icon mt-3" type="submit" @disabled(! $status->connected)>
                 <i data-feather="send"></i> Send test
             </button>
             @unless ($status->connected)

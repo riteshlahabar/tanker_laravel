@@ -51,3 +51,31 @@
 body:not(.dark-only) .modal-footer .btn-light {
     color: #000;
 }
+
+/*
+ * Icon-and-label buttons sat misaligned, the icon oversized.
+ *
+ * feather.replace() swaps `<i data-feather="x">` for an inline `<svg>` at its
+ * default 24x24 and nothing else — no sizing, no alignment. Beside 14px button
+ * text that SVG lands on the text baseline, so it reads a head taller than the
+ * label and sits low against it, and it stretches the button's height with it.
+ *
+ * Cuba does size the pair, but only inside its own wrappers — `.visual-button
+ * .btn svg`, `.button-wrapper .btn-group .btn svg` and friends (assets/css/
+ * style.css:7774 onward). The panel's toolbar, report and WhatsApp buttons are
+ * in none of those, so they never picked the rule up.
+ *
+ * Scoped to a class we opt into rather than a bare `.btn svg`: that selector
+ * carries the same specificity as Cuba's own and, loading later, would quietly
+ * resize every themed button too. A new icon button just adds `btn-icon`.
+ */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-icon svg {
+    width: 16px;
+    height: 16px;
+}

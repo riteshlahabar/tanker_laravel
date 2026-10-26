@@ -14,7 +14,7 @@
                     <div class="card-header card-no-border">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <h4 class="mb-0">{{ $filters->label() }}</h4>
-                            <a class="btn btn-outline-primary" href="{{ $exportUrl }}">
+                            <a class="btn btn-outline-primary btn-icon" href="{{ $exportUrl }}">
                                 <i data-feather="download"></i> Export Excel
                             </a>
                         </div>

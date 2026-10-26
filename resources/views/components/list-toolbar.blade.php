@@ -4,12 +4,12 @@
     <h4 class="mb-0">{{ $heading }}</h4>
     <div class="d-flex gap-2">
         @if ($export)
-            <a class="btn btn-outline-primary" id="export-link" href="{{ $export }}">
+            <a class="btn btn-outline-primary btn-icon" id="export-link" href="{{ $export }}">
                 <i data-feather="download"></i> Export Excel
             </a>
         @endif
         @if ($create)
-            <a class="btn btn-primary" href="{{ $create }}">
+            <a class="btn btn-primary btn-icon" href="{{ $create }}">
                 <i data-feather="plus"></i> {{ $createLabel }}
             </a>
         @endif
