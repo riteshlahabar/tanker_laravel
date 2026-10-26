@@ -79,3 +79,60 @@ body:not(.dark-only) .modal-footer .btn-light {
     width: 16px;
     height: 16px;
 }
+
+/*
+ * The row actions and the status toggle were built for a form, not a table row.
+ *
+ * Two separate causes, both measured in the browser on /admin/customer:
+ *
+ *   - The icons are feather's untouched 24x24 SVGs inside `display: inline`
+ *     anchors, in a `display: block` wrapper with no gap — so edit and delete
+ *     touched, separated only by the collapsed whitespace between the tags.
+ *   - Cuba's `.switch` is a full-size 60x34 control (assets/css/style.css:17060),
+ *     the size meant for a settings form. In a 30px-tall table cell it is the
+ *     loudest thing on the page.
+ *
+ * `.action-div`, `.delete-svg` and `.remove-icon` are this project's own
+ * classes — Cuba defines none of them — so scoping here touches nothing of the
+ * theme's. The toggle is only ever rendered inside `.action-div`
+ * (admin/inc/action.blade.php), which is why that is the scope rather than a
+ * new class on the label.
+ *
+ * Cuba's own `.switch-sm` (25x16) is deliberately not used: it moves the knob
+ * with `left: -13px` while the base rule moves it with `transform:
+ * translateX(26px)`, so the two fight and the knob lands off the track.
+ */
+.action-div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.action-div a {
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+}
+
+.action-div svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Two-thirds scale, knob and travel resized with the track so the geometry
+   stays Cuba's — only the dimensions change. */
+.action-div .switch {
+    width: 38px;
+    height: 20px;
+}
+
+.action-div .switch .switch-state:before {
+    width: 14px;
+    height: 14px;
+    left: 3px;
+    bottom: 3px;
+}
+
+.action-div .switch input:checked + .switch-state:before {
+    transform: translateX(18px);
+}
