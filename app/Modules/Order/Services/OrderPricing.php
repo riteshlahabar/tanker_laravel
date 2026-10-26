@@ -9,15 +9,24 @@ use App\Modules\Tanker\Models\Tanker;
 
 /**
  * What the customer pays. Water is sold by the tanker, not by the litre, so
- * the figure is a price per tanker-load multiplied by how many were ordered.
+ * there is exactly one unit in the system — a price per tanker-load — and the
+ * whole model is:
  *
- * Three sources, in order:
+ *     rate × tanker_count = order_amount
  *
- *   1. the rate on the **vehicle that delivered it** — the owner's tankers are
- *      not all the same size, so a load from one is not worth a load from
- *      another;
- *   2. the `price_per_tanker` setting, for a vehicle with no rate of its own;
- *   3. the flat `default_order_amount`, when neither is set.
+ * The rate has two scopes, an override and a default:
+ *
+ *   1. `tankers.tanker_rate`, the rate on the **vehicle that delivered it** —
+ *      the owner's tankers are not all the same size, so a load from one is
+ *      not worth a load from another;
+ *   2. the `default_tanker_rate` setting, for a vehicle with no rate of its
+ *      own.
+ *
+ * With neither set the amount is **0**, and that is deliberate: it reads as
+ * "pricing is not configured yet" and sends the owner to the tanker's edit
+ * screen. The old `default_order_amount` — a flat fee per delivery that
+ * ignored `tanker_count` — was removed for exactly that reason; a setting that
+ * silently switches off quantity is worse than no setting at all.
  *
  * The vehicle is unknown when an order is placed (the tanker comes from
  * whichever driver is assigned later), so a new order is priced from the
@@ -33,18 +42,12 @@ final class OrderPricing
     {
         $count = $tankerCount === null || $tankerCount < 1 ? 1 : $tankerCount;
 
-        $rate = $this->rateFor($tanker);
-
-        if ($rate > 0) {
-            return round($rate * $count, 2);
-        }
-
-        return (float) ($this->settings->value('default_order_amount') ?? 0);
+        return round($this->rateFor($tanker) * $count, 2);
     }
 
     /**
      * The price of one tanker-load: the vehicle's own rate when it has one,
-     * otherwise the configured default.
+     * otherwise the configured default. Zero when neither is set.
      */
     private function rateFor(?Tanker $tanker): float
     {
@@ -54,6 +57,6 @@ final class OrderPricing
             return $vehicleRate;
         }
 
-        return (float) ($this->settings->value('price_per_tanker') ?? 0);
+        return (float) ($this->settings->value('default_tanker_rate') ?? 0);
     }
 }

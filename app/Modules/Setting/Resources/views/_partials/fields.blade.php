@@ -9,13 +9,9 @@
     help="Pre-filled on a new driver. Each driver's own salary is set on their form."
     :attrs="['step' => '0.01', 'min' => 0]" required />
 
-<x-form.text name="default_order_amount" label="Default Order Amount (₹)" type="number"
-    :value="$settings['default_order_amount'] ?? 0" help="Flat price per delivery. Pre-filled on a new order."
-    :attrs="['step' => '0.01', 'min' => 0]" required />
-
-<x-form.text name="price_per_tanker" label="Price per Tanker (₹)" type="number"
-    :value="$settings['price_per_tanker'] ?? 0"
-    help="The price of one tanker-load, used for vehicles with no rate of their own. Leave at 0 to charge the flat amount above."
+<x-form.text name="default_tanker_rate" label="Default Rate per Tanker (₹)" type="number"
+    :value="$settings['default_tanker_rate'] ?? 0"
+    help="The price of one tanker-load, charged when the delivering vehicle has no rate of its own. An order is this × the number of tankers. At 0 every order prices at 0 until a rate is set."
     :attrs="['step' => '0.01', 'min' => 0]" required />
 
 <x-form.text name="daily_report_time" label="Daily Report Time" type="time"

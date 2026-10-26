@@ -33,7 +33,11 @@ final class OrderCreateController
                 ->where('status', true)
                 ->orderBy('first_name')
                 ->get(['id', 'first_name', 'last_name', 'mobile', 'address']),
-            'defaultAmount' => $this->settings->value('default_order_amount', '0'),
+            // The price of one tanker-load. The field starts at the rate for a
+            // single tanker and the admin adjusts it — an admin-entered amount
+            // is typed by hand and carries `amount_fixed`, so it is never
+            // re-priced from the vehicle later.
+            'defaultAmount' => $this->settings->value('default_tanker_rate', '0'),
         ]);
     }
 

@@ -73,8 +73,7 @@ final class TankerPricingTest extends TestCase
             'latitude' => 18.5204, 'longitude' => 73.8567,
         ]);
 
-        $this->settings()->put('price_per_tanker', '900');
-        $this->settings()->put('default_order_amount', '1200');
+        $this->settings()->put('default_tanker_rate', '900');
     }
 
     public function test_the_vehicles_own_rate_beats_the_configured_price(): void
@@ -88,12 +87,16 @@ final class TankerPricingTest extends TestCase
         $this->assertSame(1800.0, $pricing->amountFor(2));
     }
 
-    public function test_a_zero_rate_means_the_flat_amount_and_is_not_multiplied(): void
+    public function test_no_rate_anywhere_prices_at_zero_rather_than_a_flat_fee(): void
     {
-        $this->settings()->put('price_per_tanker', '0');
+        $this->settings()->put('default_tanker_rate', '0');
 
-        // Three tankers, but the flat amount is a price per delivery.
-        $this->assertSame(1200.0, app(OrderPricing::class)->amountFor(3));
+        // 0 reads as "pricing is not configured yet" and sends the owner to the
+        // tanker's edit screen. The flat `default_order_amount` that used to
+        // answer here ignored the count, so one tanker and three cost the same
+        // — which is exactly why it was removed.
+        $this->assertSame(0.0, app(OrderPricing::class)->amountFor(1));
+        $this->assertSame(0.0, app(OrderPricing::class)->amountFor(3));
     }
 
     public function test_a_missing_count_is_treated_as_one_tanker(): void

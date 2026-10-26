@@ -335,7 +335,7 @@ final class AdminApiTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 'company_name', 'admin_whatsapp_number', 'default_monthly_salary',
-                'default_order_amount', 'price_per_tanker', 'daily_report_time',
+                'default_tanker_rate', 'daily_report_time',
             ]]);
     }
 
@@ -346,8 +346,7 @@ final class AdminApiTest extends TestCase
                 'company_name' => 'Tanker Co',
                 'admin_whatsapp_number' => '919812345678',
                 'default_monthly_salary' => 17500,
-                'default_order_amount' => 1000,
-                'price_per_tanker' => 1200,
+                'default_tanker_rate' => 1200,
                 'daily_report_time' => '23:59',
             ])
             ->assertOk()

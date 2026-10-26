@@ -18,7 +18,7 @@ return new class extends Migration
     {
         Schema::table('tankers', function (Blueprint $table) {
             // Nullable: a vehicle without its own rate falls through to the
-            // `price_per_tanker` setting, the same way a schedule without an
+            // `default_tanker_rate` setting, the same way a schedule without an
             // order_amount falls through to OrderPricing.
             $table->decimal('tanker_rate', 10, 2)->nullable()->after('capacity_litres');
         });

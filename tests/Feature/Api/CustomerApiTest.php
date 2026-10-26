@@ -35,7 +35,7 @@ final class CustomerApiTest extends TestCase
 
     public function test_a_customer_can_place_an_order(): void
     {
-        app(SettingRepositoryInterface::class)->put('default_order_amount', '1200');
+        app(SettingRepositoryInterface::class)->put('default_tanker_rate', '1200');
 
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
@@ -106,9 +106,7 @@ final class CustomerApiTest extends TestCase
 
     public function test_per_tanker_pricing_multiplies_by_the_number_ordered(): void
     {
-        $settings = app(SettingRepositoryInterface::class);
-        $settings->put('default_order_amount', '1200');
-        $settings->put('price_per_tanker', '900');
+        app(SettingRepositoryInterface::class)->put('default_tanker_rate', '900');
 
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
@@ -117,16 +115,15 @@ final class CustomerApiTest extends TestCase
                 'tanker_count' => 3,
             ])
             ->assertCreated()
-            // 3 × 900, not the flat 1200: a rate above zero wins.
+            // 3 × 900. There is one unit in the system and the count always
+            // multiplies it.
             ->assertJsonPath('data.order_amount', 2700)
             ->assertJsonPath('data.tanker_count', 3);
     }
 
-    public function test_the_flat_amount_applies_when_no_per_tanker_rate_is_set(): void
+    public function test_no_configured_rate_prices_the_order_at_zero(): void
     {
-        $settings = app(SettingRepositoryInterface::class);
-        $settings->put('default_order_amount', '1200');
-        $settings->put('price_per_tanker', '0');
+        app(SettingRepositoryInterface::class)->put('default_tanker_rate', '0');
 
         $this->actingAsApi($this->customer)
             ->postJson(route('api.customer.orders.store'), [
@@ -135,8 +132,8 @@ final class CustomerApiTest extends TestCase
                 'tanker_count' => 2,
             ])
             ->assertCreated()
-            // Zero means "charge the flat amount", so the count does not multiply it.
-            ->assertJsonPath('data.order_amount', 1200);
+            // Not a flat fallback fee — 0 says "no rate is configured yet".
+            ->assertJsonPath('data.order_amount', 0);
     }
 
     public function test_a_past_delivery_date_is_refused(): void
