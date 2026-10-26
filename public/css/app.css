@@ -136,3 +136,36 @@ body:not(.dark-only) .modal-footer .btn-light {
 .action-div .switch input:checked + .switch-state:before {
     transform: translateX(18px);
 }
+
+/*
+ * The pager sat flush against the bottom of every table.
+ *
+ * DataTables lays the footer row out as two floats after the table —
+ * `.dataTables_info` left, `.dataTables_paginate` right — and nothing puts a
+ * gap between them and the table above:
+ *
+ *   - `table.dataTable` is `margin: 0 auto` (vendors/jquery.dataTables.css:255),
+ *     so the table's own bordered box has no bottom margin at all;
+ *   - Cuba then gives `.dataTables_paginate` a border and a background of its
+ *     own and sets `padding-top: 0` (assets/css/style.css:11484), removing the
+ *     0.25em the plugin shipped with.
+ *
+ * So the pager's border touched the table's border and read as one more row.
+ *
+ * Fixed on the table rather than on the two floats, which is what keeps it
+ * correct at every width: below 767px the plugin unfloats them and stacks
+ * info over pager (vendors/jquery.dataTables.css:587), where a margin on each
+ * would gap them from the table *and* from each other. A bottom margin on the
+ * table moves the whole footer row down as one, at any width.
+ *
+ * 20px is the theme's own spacing step for this wrapper — Cuba uses it for
+ * `.dataTables_wrapper + .dataTables_wrapper` and 30px under the length
+ * select above the table.
+ *
+ * Only margin-bottom is set, so the horizontal `auto` that centres the table
+ * is left alone. Applies to every list in the panel at once: all pagination
+ * here is DataTables', there is no Laravel paginator in any blade.
+ */
+.dataTables_wrapper table.dataTable {
+    margin-bottom: 20px;
+}
