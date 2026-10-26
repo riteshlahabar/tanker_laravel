@@ -11,8 +11,8 @@
 <x-form.select name="driver_id" label="Driver" :options="$driverOptions" placeholder="Select a driver"
     width="col-12" help="The driver's current tanker is used automatically." required />
 
-<x-form.select name="spot_id" label="Refill Spot" :options="$spotOptions"
+<x-form.select name="spot_id" label="Filling Point" :options="$spotOptions"
     placeholder="— Decide on the route —" width="col-12"
-    help="Only available spots are listed. Its refill charge is saved onto the order." />
+    help="Only available filling points are listed. Its refill charge is saved onto the order." />
 
 <x-form.actions :cancel="route('admin.order.show', $order)" label="Assign Order" />

@@ -52,7 +52,7 @@ final class OrderExport implements FromQuery, ShouldAutoSize, WithHeadings, With
     {
         return [
             'Order No', 'Customer', 'Mobile', 'Delivery Address', 'Delivery Date', 'Tankers',
-            'Amount', 'Driver', 'Tanker', 'Refill Spot', 'Refill Charge',
+            'Amount', 'Driver', 'Tanker', 'Filling Point', 'Refill Charge',
             'Status', 'Delivered At',
         ];
     }

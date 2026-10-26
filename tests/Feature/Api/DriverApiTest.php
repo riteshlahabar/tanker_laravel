@@ -143,7 +143,7 @@ final class DriverApiTest extends TestCase
             ->postJson(route('api.driver.orders.refill', $order), ['spot_id' => $this->spot->id])
             ->assertStatus(400)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'That refill spot is unavailable. Choose another spot.');
+            ->assertJsonPath('message', 'That filling point is unavailable. Choose another one.');
 
         $this->assertSame(OrderStatusEnum::Assigned, $order->refresh()->status);
     }

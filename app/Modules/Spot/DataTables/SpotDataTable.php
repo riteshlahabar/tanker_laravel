@@ -54,7 +54,7 @@ final class SpotDataTable extends DataTable
     {
         return $this->builder()
             ->setTableId('spot-table')
-            ->addColumn(['data' => 'name', 'title' => __('Spot Name')])
+            ->addColumn(['data' => 'name', 'title' => __('Filling Point Name')])
             ->addColumn(['data' => 'address', 'title' => __('Address')])
             ->addColumn(['data' => 'refill_charge', 'title' => __('Refill Charge')])
             ->addColumn(['data' => 'coordinates', 'title' => __('Coordinates'), 'orderable' => false, 'searchable' => false])

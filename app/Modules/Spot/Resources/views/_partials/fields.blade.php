@@ -1,6 +1,6 @@
 @php($spot = $spot ?? null)
 
-<x-form.text name="name" label="Spot Name" :value="$spot?->name" placeholder="e.g. Hadapsar Borewell" required />
+<x-form.text name="name" label="Filling Point Name" :value="$spot?->name" placeholder="e.g. Hadapsar Borewell" required />
 
 <x-form.text name="refill_charge" label="Refill Charge (₹)" type="number" :value="$spot?->refill_charge"
     placeholder="e.g. 400.00" help="One-time charge to fill a tanker here." :attrs="['step' => '0.01', 'min' => 0]"
@@ -12,7 +12,7 @@
     :attrs="['step' => 'any']" />
 
 <x-form.text name="longitude" label="Longitude" :value="$spot?->longitude" placeholder="e.g. 73.8567"
-    help="Needed for the driver's nearest-spot list." :attrs="['step' => 'any']" />
+    help="Needed for the driver's nearest filling point list." :attrs="['step' => 'any']" />
 
 <x-form.text name="water_type" label="Water Type" :value="$spot?->water_type" placeholder="e.g. Borewell, RO" />
 
@@ -25,4 +25,4 @@
 
 <x-form.status :value="$spot?->status ?? true" />
 
-<x-form.actions :cancel="route('admin.spot.index')" :label="$spot ? 'Update Spot' : 'Save Spot'" />
+<x-form.actions :cancel="route('admin.spot.index')" :label="$spot ? 'Update Filling Point' : 'Save Filling Point'" />

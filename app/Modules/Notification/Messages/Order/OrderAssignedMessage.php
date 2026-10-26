@@ -26,7 +26,7 @@ final class OrderAssignedMessage extends OrderMessage
         // which is not known until a driver is given the order.
         return sprintf(
             "Order %s is assigned.\nDriver: %s (%s)\nTanker: %s\nTankers: %d\nAmount: %s\n".
-            "Refill spot: %s\nDelivery: %s\nAddress: %s",
+            "Filling point: %s\nDelivery: %s\nAddress: %s",
             $this->order->order_no,
             $this->order->driver?->full_name ?? '—',
             $this->order->driver?->mobile ?? '—',

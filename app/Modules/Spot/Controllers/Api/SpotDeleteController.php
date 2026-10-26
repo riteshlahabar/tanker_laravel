@@ -20,6 +20,6 @@ final class SpotDeleteController
 
         $this->spots->delete($spot);
 
-        return ApiResponse::success(null, __('Spot deleted successfully.'));
+        return ApiResponse::success(null, __('Filling point deleted successfully.'));
     }
 }

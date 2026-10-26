@@ -28,6 +28,6 @@ final class SpotUpdateController
 
         return redirect()
             ->route('admin.spot.index')
-            ->with('success', __('Spot updated successfully.'));
+            ->with('success', __('Filling point updated successfully.'));
     }
 }

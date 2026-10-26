@@ -38,7 +38,7 @@ final class SpotExport implements FromQuery, ShouldAutoSize, WithHeadings, WithM
     public function headings(): array
     {
         return [
-            'Spot Name', 'Address', 'Refill Charge', 'Water Type',
+            'Filling Point Name', 'Address', 'Refill Charge', 'Water Type',
             'Latitude', 'Longitude', 'Contact Person', 'Contact Mobile',
             'Availability', 'Status',
         ];

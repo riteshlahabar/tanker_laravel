@@ -24,8 +24,8 @@
 <x-form.select name="driver_id" label="New Driver" :options="$driverOptions" placeholder="Select a driver"
     width="col-12" help="The new driver's current tanker and per-delivery rate are used." required />
 
-<x-form.select name="spot_id" label="Refill Spot" :options="$spotOptions"
-    placeholder="— Keep the current spot —" width="col-12"
+<x-form.select name="spot_id" label="Filling Point" :options="$spotOptions"
+    placeholder="— Keep the current filling point —" width="col-12"
     help="Leave this alone unless the new driver should fill somewhere else." />
 
 <x-form.textarea name="reason" label="Reason" rows="2"

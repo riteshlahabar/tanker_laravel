@@ -36,7 +36,7 @@
                         <td>{{ $order->tanker?->label() ?? '—' }}</td>
                     </tr>
                     <tr>
-                        <th>Refill spot</th>
+                        <th>Filling point</th>
                         <td>{{ $order->spot?->name ?? '—' }}
                             @if ($order->refill_charge > 0)
                                 <span class="f-light">(₹ {{ number_format((float) $order->refill_charge, 2) }})</span>

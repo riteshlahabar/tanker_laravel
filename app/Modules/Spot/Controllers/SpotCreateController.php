@@ -28,6 +28,6 @@ final class SpotCreateController
 
         return redirect()
             ->route('admin.spot.index')
-            ->with('success', __('Spot added successfully.'));
+            ->with('success', __('Filling point added successfully.'));
     }
 }

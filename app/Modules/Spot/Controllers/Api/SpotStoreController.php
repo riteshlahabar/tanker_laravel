@@ -19,7 +19,7 @@ final class SpotStoreController
     {
         return ApiResponse::success(
             new SpotResource($this->spots->create($request->validated())),
-            __('Spot added successfully.'),
+            __('Filling point added successfully.'),
             Response::HTTP_CREATED,
         );
     }

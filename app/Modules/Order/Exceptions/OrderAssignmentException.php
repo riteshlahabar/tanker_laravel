@@ -44,6 +44,6 @@ final class OrderAssignmentException extends RuntimeException
 
     public static function spotUnusable(): self
     {
-        return new self('That refill spot is unavailable. Choose another spot.');
+        return new self('That filling point is unavailable. Choose another one.');
     }
 }

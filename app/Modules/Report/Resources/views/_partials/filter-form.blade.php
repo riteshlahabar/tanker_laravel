@@ -10,7 +10,7 @@
         <input class="form-control" id="to" type="date" name="to" value="{{ $filters->to }}">
     </div>
 
-    @foreach (['driver' => 'Driver', 'customer' => 'Customer', 'spot' => 'Spot', 'tanker' => 'Tanker'] as $key => $label)
+    @foreach (['driver' => 'Driver', 'customer' => 'Customer', 'spot' => 'Filling Point', 'tanker' => 'Tanker'] as $key => $label)
         @if (in_array($key, $fields, true))
             @include('report::_partials.filter-option', ['key' => $key, 'label' => $label])
         @endif

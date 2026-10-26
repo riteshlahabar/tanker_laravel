@@ -85,7 +85,7 @@ final class OrderDataTable extends DataTable
             ->addColumn(['data' => 'delivery_date', 'title' => __('Delivery Date')])
             ->addColumn(['data' => 'driver', 'title' => __('Driver'), 'orderable' => false, 'searchable' => false])
             ->addColumn(['data' => 'tanker', 'title' => __('Tanker'), 'orderable' => false, 'searchable' => false])
-            ->addColumn(['data' => 'spot', 'title' => __('Refill Spot'), 'orderable' => false, 'searchable' => false])
+            ->addColumn(['data' => 'spot', 'title' => __('Filling Point'), 'orderable' => false, 'searchable' => false])
             ->addColumn(['data' => 'order_amount', 'title' => __('Amount')])
             ->addColumn(['data' => 'status', 'title' => __('Status'), 'searchable' => false])
             ->addColumn(['data' => 'action', 'title' => __('Action'), 'orderable' => false, 'searchable' => false])

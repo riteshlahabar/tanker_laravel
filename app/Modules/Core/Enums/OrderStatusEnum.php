@@ -18,7 +18,7 @@ enum OrderStatusEnum: string
         return match ($this) {
             self::Pending => 'Pending',
             self::Assigned => 'Assigned',
-            self::Refilling => 'Refilling at Spot',
+            self::Refilling => 'Refilling at Filling Point',
             self::OutForDelivery => 'Out for Delivery',
             self::Delivered => 'Delivered',
             self::Cancelled => 'Cancelled',

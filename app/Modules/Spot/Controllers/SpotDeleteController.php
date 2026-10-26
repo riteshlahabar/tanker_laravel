@@ -19,6 +19,6 @@ final class SpotDeleteController
 
         $this->spots->delete($spot);
 
-        return back()->with('success', __('Spot deleted successfully.'));
+        return back()->with('success', __('Filling point deleted successfully.'));
     }
 }

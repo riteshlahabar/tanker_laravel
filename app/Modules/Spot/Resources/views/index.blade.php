@@ -1,21 +1,21 @@
 @extends('layouts.simple.master')
 
-@section('title', 'Spots')
+@section('title', 'Filling Points')
 
 @section('css')
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/vendors/jquery.dataTables.css') }}">
 @endsection
 
 @section('main_content')
-    <x-page-header title="Spots" />
+    <x-page-header title="Filling Points" />
 
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-header card-no-border">
-                        <x-list-toolbar heading="Refill Spots" :create="route('admin.spot.create')"
-                            :export="route('admin.spot.export')" create-label="Add Spot" />
+                        <x-list-toolbar heading="Filling Points" :create="route('admin.spot.create')"
+                            :export="route('admin.spot.export')" create-label="Add Filling Point" />
                     </div>
                     <div class="card-body">
                         @include('spot::_partials.filters')

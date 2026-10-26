@@ -24,7 +24,7 @@ final class OrderRefillingMessage extends OrderMessage
         return sprintf(
             'Order %s: your tanker is being filled at %s and will leave shortly.',
             $this->order->order_no,
-            $this->order->spot?->name ?? 'the refill spot',
+            $this->order->spot?->name ?? 'the filling point',
         );
     }
 }

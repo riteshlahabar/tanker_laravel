@@ -23,7 +23,7 @@ final class SpotRefillReport implements ReportInterface
 
     public function title(): string
     {
-        return 'Spot Refill Report';
+        return 'Filling Point Refill Report';
     }
 
     /**
@@ -31,7 +31,7 @@ final class SpotRefillReport implements ReportInterface
      */
     public function headings(): array
     {
-        return ['Spot', 'Address', 'Charge per Refill', 'Refills', 'Total Refill Cost', 'Tankers Delivered'];
+        return ['Filling Point', 'Address', 'Charge per Refill', 'Refills', 'Total Refill Cost', 'Tankers Delivered'];
     }
 
     /**
@@ -68,7 +68,7 @@ final class SpotRefillReport implements ReportInterface
         $rows = $this->query($filters)->get();
 
         return [
-            'Spots used' => (string) $rows->where('refills', '>', 0)->count(),
+            'Filling points used' => (string) $rows->where('refills', '>', 0)->count(),
             'Refills' => number_format((float) $rows->sum('refills')),
             'Total refill cost' => '₹ '.number_format((float) $rows->sum('refill_cost'), 2),
         ];

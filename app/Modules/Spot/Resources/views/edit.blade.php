@@ -1,9 +1,9 @@
 @extends('layouts.simple.master')
 
-@section('title', 'Edit Spot')
+@section('title', 'Edit Filling Point')
 
 @section('main_content')
-    <x-page-header title="Edit Spot" :trail="['Spots']" />
+    <x-page-header title="Edit Filling Point" :trail="['Filling Points']" />
 
     <div class="container-fluid">
         <div class="row">

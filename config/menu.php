@@ -66,7 +66,7 @@ return [
         'children' => [
             ['title' => 'Driver Salary', 'route' => 'admin.report.driver-salary'],
             ['title' => 'Daily Delivery', 'route' => 'admin.report.daily-delivery'],
-            ['title' => 'Spot Refills', 'route' => 'admin.report.spot-refill'],
+            ['title' => 'Filling Point Refills', 'route' => 'admin.report.spot-refill'],
             ['title' => 'Customer Orders', 'route' => 'admin.report.customer-order'],
             ['title' => 'Tanker Utilisation', 'route' => 'admin.report.tanker-utilisation'],
             ['title' => 'Schedule Adherence', 'route' => 'admin.report.schedule-adherence'],

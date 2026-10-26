@@ -22,7 +22,7 @@ final class SpotUpdateController
 
         return ApiResponse::success(
             new SpotResource($this->spots->update($spot, $request->validated())),
-            __('Spot updated successfully.'),
+            __('Filling point updated successfully.'),
         );
     }
 }
