@@ -18,6 +18,22 @@ interface OrderServiceInterface
     public function place(array $data, User $placedBy): Order;
 
     /**
+     * The admin order form: the driver is chosen while the order is written,
+     * so the order is placed and assigned in one go and the amount comes from
+     * the tanker that driver holds.
+     *
+     * `$tankerRate` is the rate shown on the form. It is normally the
+     * vehicle's own, in which case nothing is overridden and a later handover
+     * re-prices from whichever tanker actually goes out; a rate the admin
+     * *changed* is the figure of record and fixes the amount.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws OrderAssignmentException
+     */
+    public function placeForDriver(array $data, int $driverId, ?float $tankerRate, User $actor): Order;
+
+    /**
      * Give the order to a driver, with the driver's current tanker and the
      * refill spot it will be filled at.
      *

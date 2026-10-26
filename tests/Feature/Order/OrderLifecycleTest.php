@@ -68,12 +68,21 @@ final class OrderLifecycleTest extends TestCase
             '/^TNK-'.now()->format('Y').'-\d{5,}$/',
             (string) $order->order_no,
         );
-        $this->assertSame(OrderStatusEnum::Pending, $order->status);
+        // The admin form names the driver, so the order arrives assigned —
+        // but it is still *placed* first, and both rows are in the timeline.
+        // That is what keeps the history honest and the status guard intact.
+        $this->assertSame(OrderStatusEnum::Assigned, $order->status);
+        $this->assertSame($this->driver->id, $order->driver_id);
+        $this->assertSame($this->tanker->id, $order->tanker_id);
         $this->assertSame($this->adminUser->id, $order->created_by);
         $this->assertDatabaseHas('order_status_logs', [
             'order_id' => $order->id,
             'status' => OrderStatusEnum::Pending->value,
             'note' => 'Order placed',
+        ]);
+        $this->assertDatabaseHas('order_status_logs', [
+            'order_id' => $order->id,
+            'status' => OrderStatusEnum::Assigned->value,
         ]);
     }
 
@@ -248,15 +257,36 @@ final class OrderLifecycleTest extends TestCase
     /**
      * @return array<string, mixed>
      */
+    /**
+     * The admin form names the driver, because the price of the order is the
+     * rate of the tanker that driver holds. So the payload needs a driver who
+     * actually has one.
+     */
     private function orderPayload(): array
     {
+        $this->giveDriverATanker();
+
         return [
             'customer_id' => $this->customer->id,
             'delivery_address' => 'Kothrud, Pune',
             'delivery_date' => now()->toDateString(),
+            'driver_id' => $this->driver->id,
             'tanker_count' => 1,
-            'order_amount' => 1200,
         ];
+    }
+
+    private function giveDriverATanker(): void
+    {
+        if ($this->driver->currentAssignment()->exists()) {
+            return;
+        }
+
+        $this->tanker->assignments()->create([
+            'driver_id' => $this->driver->id,
+            'assigned_from' => now()->toDateString(),
+        ]);
+
+        $this->driver->refresh();
     }
 
     private function placeOrder(): Order

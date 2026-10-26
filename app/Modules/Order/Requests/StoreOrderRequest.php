@@ -29,33 +29,51 @@ final class StoreOrderRequest extends FormRequest
                 $this->mustBeCustomer(),
             ],
             'delivery_address' => ['required', 'string', 'max:1000'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'delivery_date' => ['required', 'date', 'after_or_equal:today'],
-            'delivery_slot' => ['nullable', 'string', 'max:50'],
             // Naming a window is what gives the order a concrete delivery_at.
             'delivery_slot_id' => [
                 'nullable', 'integer',
                 Rule::exists('delivery_slots', 'id')->whereNull('deleted_at'),
             ],
+            // The driver is chosen here, not on a later screen: the price of
+            // the order is the rate of the tanker they hold, so there is no
+            // amount to show until one is picked.
+            'driver_id' => ['required', 'integer', Rule::exists('users', 'id')->whereNull('deleted_at')],
             'tanker_count' => ['nullable', 'integer', 'min:1', 'max:20'],
-            'order_amount' => ['required', 'numeric', 'min:0', 'max:9999999.99'],
+            // Pre-filled from that driver's tanker and editable, for the day a
+            // load is sold at something other than the vehicle's usual rate.
+            'tanker_rate' => ['nullable', 'numeric', 'min:0', 'max:9999999.99'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
     /**
-     * The admin types the amount by hand, so it is the figure of record:
-     * `amount_fixed` stops assignment re-pricing it from the vehicle's rate.
+     * The order's own columns. `driver_id` and `tanker_rate` are not among
+     * them: the driver is applied by assignment, which also snapshots the
+     * tanker, and the rate only decides what the amount becomes.
+     *
+     * No `order_amount` either — an admin-entered order is priced the same way
+     * every other order is, from the tanker that goes out.
      *
      * @return array<string, mixed>
      */
     public function orderData(): array
     {
-        return [
-            ...$this->validated(),
-            'amount_fixed' => true,
-        ];
+        return collect($this->validated())
+            ->except(['driver_id', 'tanker_rate'])
+            ->all();
+    }
+
+    public function driverId(): int
+    {
+        return (int) $this->validated('driver_id');
+    }
+
+    public function tankerRate(): ?float
+    {
+        $rate = $this->validated('tanker_rate');
+
+        return $rate === null || $rate === '' ? null : (float) $rate;
     }
 
     /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Services;
 
-use App\Modules\Setting\Contracts\SettingRepositoryInterface;
 use App\Modules\Tanker\Models\Tanker;
 
 /**
@@ -14,49 +13,45 @@ use App\Modules\Tanker\Models\Tanker;
  *
  *     rate × tanker_count = order_amount
  *
- * The rate has two scopes, an override and a default:
+ * The rate comes from **one place only**: `tankers.tanker_rate`, the rate on
+ * the vehicle that delivers. There is no global default — the owner's tankers
+ * are not the same size, so a single fallback figure would be wrong for every
+ * vehicle that has a rate of its own and invented for every vehicle that does
+ * not.
  *
- *   1. `tankers.tanker_rate`, the rate on the **vehicle that delivered it** —
- *      the owner's tankers are not all the same size, so a load from one is
- *      not worth a load from another;
- *   2. the `default_tanker_rate` setting, for a vehicle with no rate of its
- *      own.
+ * With no vehicle, or a vehicle with no rate, the amount is **0**, and that is
+ * deliberate: it reads as "no tanker has been chosen yet, so the price is not
+ * known". An order placed from the customer app is in exactly that state until
+ * an admin assigns a driver, at which point `OrderService::assign()` prices it
+ * from the vehicle that actually goes out.
  *
- * With neither set the amount is **0**, and that is deliberate: it reads as
- * "pricing is not configured yet" and sends the owner to the tanker's edit
- * screen. The old `default_order_amount` — a flat fee per delivery that
- * ignored `tanker_count` — was removed for exactly that reason; a setting that
- * silently switches off quantity is worse than no setting at all.
- *
- * The vehicle is unknown when an order is placed (the tanker comes from
- * whichever driver is assigned later), so a new order is priced from the
- * setting and re-priced from the vehicle at assignment — see
- * `OrderService::priceFor()`. An order whose amount was *given* rather than
- * calculated carries `amount_fixed` and is never re-priced.
+ * An order whose amount was *given* rather than calculated — the admin typing
+ * a rate on the order form, or a standing order carrying its own figure —
+ * holds `amount_fixed` and is never re-priced.
  */
 final class OrderPricing
 {
-    public function __construct(private readonly SettingRepositoryInterface $settings) {}
-
     public function amountFor(?int $tankerCount, ?Tanker $tanker = null): float
     {
-        $count = $tankerCount === null || $tankerCount < 1 ? 1 : $tankerCount;
-
-        return round($this->rateFor($tanker) * $count, 2);
+        return round($this->rateFor($tanker) * $this->countFor($tankerCount), 2);
     }
 
     /**
-     * The price of one tanker-load: the vehicle's own rate when it has one,
-     * otherwise the configured default. Zero when neither is set.
+     * What one tanker-load costs on a given rate — the figure the order form
+     * shows the moment a driver is picked, and the basis of the total.
      */
-    private function rateFor(?Tanker $tanker): float
+    public function amountForRate(float $rate, ?int $tankerCount): float
     {
-        $vehicleRate = (float) ($tanker?->tanker_rate ?? 0);
+        return round($rate * $this->countFor($tankerCount), 2);
+    }
 
-        if ($vehicleRate > 0) {
-            return $vehicleRate;
-        }
+    public function rateFor(?Tanker $tanker): float
+    {
+        return (float) ($tanker?->tanker_rate ?? 0);
+    }
 
-        return (float) ($this->settings->value('default_tanker_rate') ?? 0);
+    private function countFor(?int $tankerCount): int
+    {
+        return $tankerCount === null || $tankerCount < 1 ? 1 : $tankerCount;
     }
 }

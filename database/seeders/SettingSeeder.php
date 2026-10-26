@@ -16,10 +16,6 @@ final class SettingSeeder extends Seeder
         'admin_whatsapp_number' => '',
         'daily_report_time' => '23:59',
         'default_monthly_salary' => '15000',
-        // Water is sold by the tanker. This is the fallback price of one
-        // tanker-load, used when the vehicle that delivered has no rate of
-        // its own. Zero means pricing is not configured yet.
-        'default_tanker_rate' => '0',
         'company_name' => 'WTMS',
     ];
 

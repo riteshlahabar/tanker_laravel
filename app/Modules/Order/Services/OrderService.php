@@ -67,6 +67,48 @@ final class OrderService extends BaseService implements OrderServiceInterface
         });
     }
 
+    /**
+     * Place and assign in one step, for the admin order form where the driver
+     * is picked while the order is written.
+     *
+     * Deliberately composed from the two existing paths rather than a third
+     * one of its own: the order gets both status-log rows (placed, then
+     * assigned), the assignment guards still run, and the spot is left for the
+     * route the same way an auto-assigned standing order leaves it. This is
+     * the idiom `ScheduledOrderGenerator::autoAssign()` already uses.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function placeForDriver(array $data, int $driverId, ?float $tankerRate, User $actor): Order
+    {
+        $order = $this->assign($this->place($data, $actor), $driverId, null, $actor);
+
+        return $this->applyTypedRate($order, $tankerRate);
+    }
+
+    /**
+     * A rate the admin changed on the form is the figure of record, so it
+     * fixes the amount and stops a later handover re-pricing it. A rate left
+     * at the vehicle's own is not an override at all — the amount assignment
+     * already calculated is identical, and leaving `amount_fixed` false keeps
+     * a reassignment free to re-price from whichever tanker goes out.
+     */
+    private function applyTypedRate(Order $order, ?float $tankerRate): Order
+    {
+        $vehicleRate = $this->pricing->rateFor($order->tanker);
+
+        if ($tankerRate === null || abs($tankerRate - $vehicleRate) < 0.01) {
+            return $order;
+        }
+
+        $order->update([
+            'order_amount' => $this->pricing->amountForRate($tankerRate, $order->tanker_count),
+            'amount_fixed' => true,
+        ]);
+
+        return $order->refresh();
+    }
+
     public function assign(Order $order, int $driverId, ?int $spotId, User $actor): Order
     {
         $driver = $this->drivers->findOrFail($driverId);

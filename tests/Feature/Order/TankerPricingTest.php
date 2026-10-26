@@ -73,28 +73,27 @@ final class TankerPricingTest extends TestCase
             'latitude' => 18.5204, 'longitude' => 73.8567,
         ]);
 
-        $this->settings()->put('default_tanker_rate', '900');
     }
 
-    public function test_the_vehicles_own_rate_beats_the_configured_price(): void
+    public function test_the_price_comes_from_the_vehicle_and_nowhere_else(): void
     {
         $pricing = app(OrderPricing::class);
 
         $this->assertSame(3000.0, $pricing->amountFor(2, $this->bigTanker));
-        // No rate on the vehicle, so the setting applies.
-        $this->assertSame(1800.0, $pricing->amountFor(2, $this->unpricedTanker));
-        // No vehicle at all — which is every order at the moment it is placed.
-        $this->assertSame(1800.0, $pricing->amountFor(2));
+
+        // A vehicle with no rate, and no vehicle at all, both price at 0.
+        // There is no global default to fall back on: a single figure would be
+        // wrong for every tanker that has a rate of its own, and invented for
+        // every one that does not.
+        $this->assertSame(0.0, $pricing->amountFor(2, $this->unpricedTanker));
+        $this->assertSame(0.0, $pricing->amountFor(2));
     }
 
-    public function test_no_rate_anywhere_prices_at_zero_rather_than_a_flat_fee(): void
+    public function test_an_order_with_no_tanker_yet_prices_at_zero(): void
     {
-        $this->settings()->put('default_tanker_rate', '0');
-
-        // 0 reads as "pricing is not configured yet" and sends the owner to the
-        // tanker's edit screen. The flat `default_order_amount` that used to
-        // answer here ignored the count, so one tanker and three cost the same
-        // — which is exactly why it was removed.
+        // Every app-placed order is in this state until an admin assigns a
+        // driver — the price genuinely is not known before a tanker is chosen,
+        // and 0 says so rather than quoting a figure the delivery may not match.
         $this->assertSame(0.0, app(OrderPricing::class)->amountFor(1));
         $this->assertSame(0.0, app(OrderPricing::class)->amountFor(3));
     }
@@ -121,24 +120,45 @@ final class TankerPricingTest extends TestCase
         $this->assertSame('3000.00', $order->refresh()->order_amount);
     }
 
-    public function test_an_amount_the_admin_typed_survives_assignment(): void
+    public function test_the_admin_form_prices_from_the_chosen_drivers_tanker(): void
     {
+        $this->giveDriver($this->bigTanker);
+
         $this->actingAs($this->adminUser)->post(route('admin.order.store'), [
             'customer_id' => $this->customer->id,
             'delivery_address' => 'Kothrud, Pune',
             'delivery_date' => now()->toDateString(),
+            'driver_id' => $this->driver->id,
             'tanker_count' => 2,
-            'order_amount' => 500,
         ])->assertRedirect();
 
         $order = Order::query()->firstOrFail();
-        $this->assertTrue($order->amount_fixed);
 
+        // 2 × 1500, straight off the vehicle. Nothing was typed, so the amount
+        // stays calculated and a later handover may re-price it.
+        $this->assertSame('3000.00', $order->order_amount);
+        $this->assertFalse((bool) $order->amount_fixed);
+    }
+
+    public function test_a_rate_the_admin_changed_on_the_form_fixes_the_amount(): void
+    {
         $this->giveDriver($this->bigTanker);
-        $this->service()->assign($order, $this->driver->id, $this->spot->id, $this->adminUser);
 
-        // Not 2 × 1500: the owner's own figure is the figure of record.
-        $this->assertSame('500.00', $order->refresh()->order_amount);
+        $this->actingAs($this->adminUser)->post(route('admin.order.store'), [
+            'customer_id' => $this->customer->id,
+            'delivery_address' => 'Kothrud, Pune',
+            'delivery_date' => now()->toDateString(),
+            'driver_id' => $this->driver->id,
+            'tanker_count' => 2,
+            // The vehicle charges 1500; this load is being sold at 1200.
+            'tanker_rate' => 1200,
+        ])->assertRedirect();
+
+        $order = Order::query()->firstOrFail();
+
+        $this->assertSame('2400.00', $order->order_amount);
+        // Given rather than calculated, so a handover must not overwrite it.
+        $this->assertTrue((bool) $order->amount_fixed);
     }
 
     public function test_a_handover_reprices_from_the_new_drivers_tanker(): void

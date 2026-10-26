@@ -28,4 +28,5 @@
 
 @section('scripts')
     @include('order::_partials.customer-autofill')
+    @include('order::_partials.order-amount')
 @endsection

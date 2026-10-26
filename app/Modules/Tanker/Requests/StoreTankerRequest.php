@@ -26,7 +26,7 @@ class StoreTankerRequest extends FormRequest
             'vehicle_number' => ['required', 'string', 'max:30', $this->uniqueVehicleNumber()],
             'capacity_litres' => ['nullable', 'integer', 'min:1', 'max:200000'],
             // What one tanker-load from this vehicle costs the customer. Blank
-            // falls through to the `default_tanker_rate` setting.
+// leaves every order on that vehicle priced at 0 until a rate is set.
             'tanker_rate' => ['nullable', 'numeric', 'min:0', 'max:9999999.99'],
             'model_year' => ['nullable', 'integer', 'digits:4', 'min:1950', 'max:'.(date('Y') + 1)],
             'rc_number' => ['nullable', 'string', 'max:50'],
