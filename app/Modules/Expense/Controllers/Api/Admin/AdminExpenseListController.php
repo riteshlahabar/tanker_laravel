@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace App\Modules\Expense\Controllers\Api\Admin;
 
-use App\Modules\Core\Enums\ExpenseCategoryEnum;
 use App\Modules\Core\Enums\PermissionEnum;
 use App\Modules\Core\Support\ApiResponse;
 use App\Modules\Core\Support\Paginated;
 use App\Modules\Expense\Contracts\ExpenseRepositoryInterface;
 use App\Modules\Expense\Resources\ExpenseResource;
-use Illuminate\Database\Eloquent\Builder;
+use App\Modules\Expense\Support\ExpenseFilters;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 
 /**
  * Every driver's spending, with the filters the admin screen offers.
+ *
+ * The filters themselves live in [ExpenseFilters] and are applied by
+ * `ExpenseRepository::filtered()`, which the summary endpoint beside this one
+ * also uses — so the total the screen shows above the list is the sum of
+ * exactly these rows.
  */
 final class AdminExpenseListController
 {
@@ -27,34 +30,15 @@ final class AdminExpenseListController
     {
         Gate::authorize(PermissionEnum::ExpenseView->value);
 
-        $request->validate([
-            'driver_id' => ['nullable', 'integer'],
-            'category' => ['nullable', Rule::in(ExpenseCategoryEnum::values())],
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date', 'after_or_equal:from'],
-        ]);
+        $request->validate(ExpenseFilters::rules());
 
-        $search = $request->string('search')->value();
-        $driverId = $request->integer('driver_id');
-        $category = $request->string('category')->value();
-
-        $page = $this->expenses->visibleTo($request->user())
+        $page = $this->expenses
+            ->filtered($request->user(), ExpenseFilters::fromRequest($request))
             ->with([
                 'driver:id,first_name,last_name',
                 'tanker:id,vehicle_name,vehicle_number',
                 'enteredBy:id,first_name,last_name',
             ])
-            ->between(
-                $request->string('from')->value() ?: null,
-                $request->string('to')->value() ?: null,
-            )
-            ->when($driverId > 0, fn (Builder $q) => $q->where('driver_id', $driverId))
-            ->when($category !== '', fn (Builder $q) => $q->where('category', $category))
-            ->when($search !== '', fn (Builder $q) => $q
-                ->where(fn (Builder $inner) => $inner
-                    ->where('notes', 'like', "%{$search}%")
-                    ->orWhereHas('driver', fn (Builder $d) => $d
-                        ->whereAny(['first_name', 'last_name', 'mobile'], 'like', "%{$search}%"))))
             ->orderByDesc('expense_date')
             ->orderByDesc('id')
             ->paginate(Paginated::perPage($request->input('per_page')));

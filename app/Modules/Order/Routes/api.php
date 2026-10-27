@@ -12,6 +12,7 @@ use App\Modules\Order\Controllers\Api\Customer\PlaceOrderController;
 use App\Modules\Order\Controllers\Api\Driver\MarkDeliveredController;
 use App\Modules\Order\Controllers\Api\Driver\MarkOutForDeliveryController;
 use App\Modules\Order\Controllers\Api\Driver\MyDeliveriesController;
+use App\Modules\Order\Controllers\Api\Driver\PlaceDriverOrderController;
 use App\Modules\Order\Controllers\Api\Driver\StartRefillController;
 use App\Modules\Order\Controllers\Api\OrderDetailController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,9 @@ Route::middleware(['auth:sanctum', 'access-token', 'active', 'throttle:api'])->g
 
     Route::prefix('driver')->name('api.driver.')->middleware('role:driver')->group(function (): void {
         Route::get('orders', MyDeliveriesController::class)->name('orders.index');
+        // A job taken on the route. Placed and assigned to the caller in one
+        // step — the driver is never asked which driver, see the request.
+        Route::post('orders', PlaceDriverOrderController::class)->name('orders.store');
         Route::get('orders/{order}', OrderDetailController::class)->name('orders.show');
         Route::post('orders/{order}/refill', StartRefillController::class)->name('orders.refill');
         Route::post('orders/{order}/out-for-delivery', MarkOutForDeliveryController::class)

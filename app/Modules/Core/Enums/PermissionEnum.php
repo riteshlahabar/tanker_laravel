@@ -18,6 +18,11 @@ enum PermissionEnum: string
 
     case CustomerView = 'customer.view';
     case CustomerManage = 'customer.manage';
+    // Enough of a customer to write an order for them — name, mobile, address
+    // — and nothing else. Deliberately *not* CustomerView, which opens the
+    // full record and the panel's customer screens: a driver placing an order
+    // needs to find a customer, not read their account.
+    case CustomerLookup = 'customer.lookup';
 
     case SpotView = 'spot.view';
     case SpotManage = 'spot.manage';
@@ -65,7 +70,17 @@ enum PermissionEnum: string
             RoleEnum::Admin => self::values(),
             RoleEnum::Driver => [
                 self::OrderView->value,
+                // A driver flagged down on the route writes the order himself,
+                // and `DriverPlaceOrderRequest` forces it onto *his* id — so
+                // OrderCreate here can only ever create his own work. Note
+                // OrderAssign is **not** granted: `OrderService::assign()`
+                // runs no permission check of its own, so creation is all this
+                // path needs, and withholding assign keeps a driver off the
+                // admin's assign and reassign endpoints.
+                self::OrderCreate->value,
                 self::OrderUpdateStatus->value,
+                // Finding that customer. Not CustomerView — see the case.
+                self::CustomerLookup->value,
                 self::SpotView->value,
                 self::SlotView->value,
                 // Their own out-of-pocket spending. No ExpenseManage: a driver

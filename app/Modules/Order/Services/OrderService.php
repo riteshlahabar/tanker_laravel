@@ -77,6 +77,15 @@ final class OrderService extends BaseService implements OrderServiceInterface
      * here snapshots its refill charge exactly as the Assign screen does.
      * This is the idiom `ScheduledOrderGenerator::autoAssign()` already uses.
      *
+     * **The whole of it is one transaction**, which matters because the steps
+     * can fail apart: `place()` commits a pending order, and `assign()` then
+     * throws if the driver turns out to be inactive or holding no tanker. Left
+     * unwrapped, a refused submit answered 400 *and* left an orphaned pending
+     * order behind, with no driver and no price, that only the admin could
+     * clear up. Both callers — the admin's form and the driver's own — are
+     * "place and assign, or neither". The inner `place()` transaction becomes a
+     * savepoint, so nothing about the happy path changes.
+     *
      * @param  array<string, mixed>  $data
      */
     public function placeForDriver(
@@ -86,9 +95,11 @@ final class OrderService extends BaseService implements OrderServiceInterface
         ?float $tankerRate,
         User $actor,
     ): Order {
-        $order = $this->assign($this->place($data, $actor), $driverId, $spotId, $actor);
+        return $this->transaction(function () use ($data, $driverId, $spotId, $tankerRate, $actor): Order {
+            $order = $this->assign($this->place($data, $actor), $driverId, $spotId, $actor);
 
-        return $this->applyTypedRate($order, $tankerRate);
+            return $this->applyTypedRate($order, $tankerRate);
+        });
     }
 
     /**

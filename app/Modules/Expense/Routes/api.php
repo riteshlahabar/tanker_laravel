@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Modules\Expense\Controllers\Api\Admin\AdminExpenseListController;
+use App\Modules\Expense\Controllers\Api\Admin\AdminExpenseSummaryController;
 use App\Modules\Expense\Controllers\Api\ExpenseDeleteController;
 use App\Modules\Expense\Controllers\Api\ExpenseListController;
 use App\Modules\Expense\Controllers\Api\ExpenseStoreController;
@@ -22,6 +23,9 @@ Route::middleware(['auth:sanctum', 'access-token', 'active', 'throttle:api'])->g
     });
 
     Route::middleware('role:admin')->prefix('admin')->name('api.admin.')->group(function (): void {
+        // Before the list for no routing reason — there is no {expense} route
+        // here — but kept in the driver group's order so the two read alike.
+        Route::get('expenses/summary', AdminExpenseSummaryController::class)->name('expenses.summary');
         Route::get('expenses', AdminExpenseListController::class)->name('expenses.index');
         // Same controllers as the driver's own: filing an expense for somebody
         // else differs only in who the request names, which the request class

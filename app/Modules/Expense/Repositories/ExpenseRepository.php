@@ -9,6 +9,7 @@ use App\Modules\Core\Enums\ExpenseCategoryEnum;
 use App\Modules\Core\Repositories\BaseRepository;
 use App\Modules\Expense\Contracts\ExpenseRepositoryInterface;
 use App\Modules\Expense\Models\DriverExpense;
+use App\Modules\Expense\Support\ExpenseFilters;
 use Illuminate\Database\Eloquent\Builder;
 
 final class ExpenseRepository extends BaseRepository implements ExpenseRepositoryInterface
@@ -37,13 +38,46 @@ final class ExpenseRepository extends BaseRepository implements ExpenseRepositor
     }
 
     /**
+     * The admin screen's filters, applied once. Both the list and the totals
+     * above it are built from this, so the figure and the rows can never
+     * answer different questions.
+     */
+    public function filtered(User $user, ExpenseFilters $filters): Builder
+    {
+        return $this->visibleTo($user)
+            ->between($filters->from, $filters->to)
+            ->when($filters->driverId !== null, fn (Builder $q) => $q
+                ->where('driver_id', $filters->driverId))
+            ->when($filters->category !== null, fn (Builder $q) => $q
+                ->where('category', $filters->category))
+            ->when($filters->search !== null, fn (Builder $q) => $q
+                ->where(fn (Builder $inner) => $inner
+                    ->where('notes', 'like', "%{$filters->search}%")
+                    ->orWhereHas('driver', fn (Builder $d) => $d
+                        ->whereAny(['first_name', 'last_name', 'mobile'], 'like', "%{$filters->search}%"))));
+    }
+
+    /**
      * @return array<string, float|int>
      */
     public function summaryFor(int $driverId, string $from, string $to): array
     {
-        $rows = DriverExpense::query()
-            ->where('driver_id', $driverId)
-            ->between($from, $to)
+        return $this->summarise(
+            DriverExpense::query()->where('driver_id', $driverId)->between($from, $to),
+        );
+    }
+
+    /**
+     * Totals by category over whatever query is handed in — one driver's
+     * month for the driver's own header, or every driver under the admin's
+     * filters for theirs.
+     *
+     * @return array<string, float|int>
+     */
+    public function summarise(Builder $query): array
+    {
+        $rows = $query
+            ->reorder()
             ->selectRaw('category, count(*) as entries, sum(amount) as total')
             ->groupBy('category')
             ->get();

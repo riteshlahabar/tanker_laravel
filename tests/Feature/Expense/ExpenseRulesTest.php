@@ -272,6 +272,82 @@ final class ExpenseRulesTest extends TestCase
         $this->actingAsApi($this->ramesh)
             ->getJson(route('api.admin.expenses.index'))
             ->assertForbidden();
+
+        $this->actingAsApi($this->ramesh)
+            ->getJson(route('api.admin.expenses.summary'))
+            ->assertForbidden();
+    }
+
+    /**
+     * The admin screen shows a spending total above the rows it lists, so the
+     * two have to answer the same question — the figure is the sum of exactly
+     * what is listed, not of everything.
+     *
+     * Both endpoints go through `ExpenseRepository::filtered()` for that
+     * reason; this is the test that would fail if either grew a filter of its
+     * own.
+     */
+    public function test_the_admin_summary_totals_exactly_what_the_filtered_list_returns(): void
+    {
+        $this->expenseFor($this->ramesh, ['amount' => 1200]);
+        $this->expenseFor($this->ramesh, [
+            'amount' => 300, 'category' => ExpenseCategoryEnum::Toll->value,
+        ]);
+        $this->expenseFor($this->suresh, ['amount' => 900]);
+
+        $query = ['driver_id' => $this->ramesh->id];
+
+        $list = $this->actingAsApi($this->adminUser)
+            ->getJson(route('api.admin.expenses.index', $query))
+            ->assertOk();
+
+        $summary = $this->actingAsApi($this->adminUser)
+            ->getJson(route('api.admin.expenses.summary', $query))
+            ->assertOk();
+
+        $this->assertCount(2, $list->json('data.items'));
+
+        // Integral money arrives without its `.0` — PHP serialises 1500.0 as
+        // 1500 — so these read as ints here exactly as the driver summary's
+        // assertions above do. The app reads them through `JsonRead.asDouble`
+        // for the same reason (CLAUDE.md rule 7).
+        $summary
+            ->assertJsonPath('data.filtered.entries', 2)
+            ->assertJsonPath('data.filtered.total', 1500)
+            ->assertJsonPath('data.filtered.fuel', 1200)
+            ->assertJsonPath('data.filtered.toll', 300)
+            // Every category is present even at zero, so the header never
+            // changes shape with the data.
+            ->assertJsonPath('data.filtered.maintenance', 0)
+            // `month` deliberately ignores the filters: it is the fixed "what
+            // are we spending" reference, so it still counts Suresh's 900.
+            ->assertJsonPath('data.month.total', 2400)
+            ->assertJsonPath('data.month.entries', 3);
+    }
+
+    public function test_the_admin_summary_follows_a_category_and_date_filter_too(): void
+    {
+        $this->expenseFor($this->ramesh, ['amount' => 1200]);
+        $this->expenseFor($this->ramesh, [
+            'amount' => 450,
+            'category' => ExpenseCategoryEnum::Toll->value,
+            'expense_date' => now()->subMonths(2)->toDateString(),
+        ]);
+
+        $this->actingAsApi($this->adminUser)
+            ->getJson(route('api.admin.expenses.summary', ['category' => 'toll']))
+            ->assertOk()
+            ->assertJsonPath('data.filtered.total', 450)
+            // Out of this month, so the reference figure excludes it.
+            ->assertJsonPath('data.month.total', 1200);
+
+        $this->actingAsApi($this->adminUser)
+            ->getJson(route('api.admin.expenses.summary', [
+                'from' => now()->subMonths(3)->toDateString(),
+                'to' => now()->subMonth()->toDateString(),
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.filtered.total', 450);
     }
 
     public function test_the_repository_scope_is_what_hides_other_drivers_rows(): void
