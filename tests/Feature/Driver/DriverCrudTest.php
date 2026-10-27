@@ -186,6 +186,47 @@ final class DriverCrudTest extends TestCase
             ->assertSee('MH01AA1111');
     }
 
+    /**
+     * The Rate / Tanker column, in all three of its states.
+     *
+     * The rate is read off the driver's **current** tanker through the eager
+     * load, so a `select` that forgets `tanker_rate` would quietly draw every
+     * driver as "Not set" — the narrow-select fault CLAUDE.md's Performance
+     * section warns about, and one no other test would notice, because the
+     * column still renders and the page still passes.
+     */
+    public function test_the_datatable_shows_each_driver_s_tanker_rate(): void
+    {
+        $priced = Tanker::query()->create([
+            'vehicle_name' => 'Priced', 'vehicle_number' => 'MH01AA2222', 'tanker_rate' => 1500,
+        ]);
+        $rateless = Tanker::query()->create(['vehicle_name' => 'Rateless', 'vehicle_number' => 'MH01AA3333']);
+
+        $withRate = $this->userWithRole(RoleEnum::Driver, ['mobile' => '9800000001']);
+        $withoutRate = $this->userWithRole(RoleEnum::Driver, ['mobile' => '9800000002']);
+        // No assignment at all, so there is no vehicle to have a rate.
+        $this->userWithRole(RoleEnum::Driver, ['mobile' => '9800000003']);
+
+        $priced->assignments()->create(['driver_id' => $withRate->id, 'assigned_from' => now()->toDateString()]);
+        $rateless->assignments()->create([
+            'driver_id' => $withoutRate->id, 'assigned_from' => now()->toDateString(),
+        ]);
+
+        $rows = $this->actingAs($this->adminUser)
+            ->withHeaders(['X-Requested-With' => 'XMLHttpRequest'])
+            ->getJson(route('admin.driver.index').'?draw=1&start=0&length=10')
+            ->assertOk()
+            ->json('data');
+
+        $rates = collect($rows)->pluck('tanker_rate', 'mobile');
+
+        $this->assertSame('₹ 1,500.00', $rates['9800000001']);
+        // "Not set", never "₹ 0.00" — a blank rate means pricing is not
+        // configured for that vehicle, not that the water is free.
+        $this->assertStringContainsString('Not set', $rates['9800000002']);
+        $this->assertStringContainsString('&mdash;', $rates['9800000003']);
+    }
+
     public function test_driver_export_downloads(): void
     {
         $this->userWithRole(RoleEnum::Driver, ['mobile' => '9876543210']);

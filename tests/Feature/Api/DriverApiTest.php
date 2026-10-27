@@ -133,6 +133,38 @@ final class DriverApiTest extends TestCase
         $this->assertSame('250.00', $order->refill_charge);
     }
 
+    /**
+     * The driver app's ordinary path once the admin has named the filling
+     * point: Start Refill posts no `spot_id` at all, and the point and the
+     * charge snapshotted from it are left exactly as the admin set them.
+     *
+     * The app relies on this — it stopped asking the driver to re-pick a point
+     * the office had already chosen — so a `spot_id` creeping back into that
+     * request, or `recordSpot()` losing its early return, would silently
+     * re-snapshot the charge on every refill.
+     */
+    public function test_a_refill_with_no_spot_keeps_the_one_the_admin_chose(): void
+    {
+        $order = $this->order([
+            'status' => OrderStatusEnum::Assigned,
+            'spot_id' => $this->spot->id,
+            'refill_charge' => 400,
+        ]);
+
+        $this->actingAsApi($this->driver)
+            ->postJson(route('api.driver.orders.refill', $order))
+            ->assertOk()
+            ->assertJsonPath('data.status', 'refilling')
+            // The id is what tells the app a point is already chosen, so it
+            // has to be on the wire whether or not the relation was loaded.
+            ->assertJsonPath('data.spot_id', $this->spot->id);
+
+        $order->refresh();
+
+        $this->assertSame($this->spot->id, $order->spot_id);
+        $this->assertSame('400.00', $order->refill_charge);
+    }
+
     public function test_an_unavailable_spot_is_refused_at_refill_time(): void
     {
         $this->spot->update(['is_available' => false]);

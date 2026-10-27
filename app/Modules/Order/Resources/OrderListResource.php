@@ -39,6 +39,11 @@ final class OrderListResource extends JsonResource
             'customer_name' => $this->whenLoaded('customer', fn () => $this->customer?->full_name),
             'driver_name' => $this->whenLoaded('driver', fn () => $this->driver?->full_name),
             'tanker_number' => $this->whenLoaded('tanker', fn () => $this->tanker?->vehicle_number),
+            // The id travels unconditionally, the name only when the relation
+            // is loaded: the driver's app needs to know *whether* a filling
+            // point was already chosen before it decides whether to ask, and
+            // which one to pre-select if the driver changes it.
+            'spot_id' => $this->spot_id,
             'spot_name' => $this->whenLoaded('spot', fn () => $this->spot?->name),
             'delivered_at' => $this->delivered_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
