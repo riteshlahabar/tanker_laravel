@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Order\Services;
 
 use App\Models\User;
+use App\Modules\Core\Enums\OrderAlertEnum;
 use App\Modules\Core\Enums\OrderStatusEnum;
 use App\Modules\Core\Services\BaseService;
 use App\Modules\Driver\Contracts\DriverRepositoryInterface;
@@ -53,6 +54,10 @@ final class OrderService extends BaseService implements OrderServiceInterface
                 'order_no' => 'pending',
                 'status' => OrderStatusEnum::Pending,
                 'created_by' => $placedBy->id,
+                // Who the buzzer is for, decided from who is writing the
+                // order — the admin's job rings its driver, a driver's job
+                // rings the office. Nobody is ever rung about their own.
+                'alert_for' => OrderAlertEnum::forPlacer($placedBy),
             ]);
 
             // The reference is derived from the row id, so it is written once

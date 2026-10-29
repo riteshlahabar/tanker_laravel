@@ -14,6 +14,8 @@ use App\Modules\Order\Controllers\Api\Driver\MarkOutForDeliveryController;
 use App\Modules\Order\Controllers\Api\Driver\MyDeliveriesController;
 use App\Modules\Order\Controllers\Api\Driver\PlaceDriverOrderController;
 use App\Modules\Order\Controllers\Api\Driver\StartRefillController;
+use App\Modules\Order\Controllers\Api\MarkOrderSeenController;
+use App\Modules\Order\Controllers\Api\OrderAlertsController;
 use App\Modules\Order\Controllers\Api\OrderDetailController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +35,9 @@ Route::middleware(['auth:sanctum', 'access-token', 'active', 'throttle:api'])->g
 
     Route::prefix('driver')->name('api.driver.')->middleware('role:driver')->group(function (): void {
         Route::get('orders', MyDeliveriesController::class)->name('orders.index');
+        // BEFORE `orders/{order}`, or the word "alerts" is matched as an
+        // order id and the route 404s on a model it cannot bind.
+        Route::get('orders/alerts', OrderAlertsController::class)->name('orders.alerts');
         // A job taken on the route. Placed and assigned to the caller in one
         // step — the driver is never asked which driver, see the request.
         Route::post('orders', PlaceDriverOrderController::class)->name('orders.store');
@@ -41,14 +46,18 @@ Route::middleware(['auth:sanctum', 'access-token', 'active', 'throttle:api'])->g
         Route::post('orders/{order}/out-for-delivery', MarkOutForDeliveryController::class)
             ->name('orders.out-for-delivery');
         Route::post('orders/{order}/delivered', MarkDeliveredController::class)->name('orders.delivered');
+        Route::post('orders/{order}/seen', MarkOrderSeenController::class)->name('orders.seen');
     });
 
     Route::prefix('admin')->name('api.admin.')->middleware('role:admin')->group(function (): void {
         Route::get('orders', AdminOrderListController::class)->name('orders.index');
+        // Same ordering rule as the driver group above.
+        Route::get('orders/alerts', OrderAlertsController::class)->name('orders.alerts');
         Route::post('orders', CreateOrderController::class)->name('orders.store');
         Route::get('orders/{order}', OrderDetailController::class)->name('orders.show');
         Route::post('orders/{order}/assign', AssignOrderController::class)->name('orders.assign');
         Route::post('orders/{order}/reassign', ReassignOrderController::class)->name('orders.reassign');
         Route::post('orders/{order}/cancel', CancelOrderController::class)->name('orders.cancel');
+        Route::post('orders/{order}/seen', MarkOrderSeenController::class)->name('orders.seen');
     });
 });

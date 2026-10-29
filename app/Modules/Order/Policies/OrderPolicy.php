@@ -36,6 +36,23 @@ final class OrderPolicy
         return $user->can(PermissionEnum::OrderCreate->value);
     }
 
+    /**
+     * Only the audience the buzzer is ringing may stop it.
+     *
+     * Not the same question as [view]: an admin may read every order, but an
+     * order written *by* the admin is not theirs to mark seen — the driver it
+     * was handed to is the one whose phone is ringing, and silencing it from
+     * the office would lose the record of whether the job was ever looked at.
+     */
+    public function markSeen(User $user, Order $order): bool
+    {
+        if ($order->alert_for === null || ! $this->view($user, $order)) {
+            return false;
+        }
+
+        return $order->alert_for->isAudience($user);
+    }
+
     public function assign(User $user, Order $order): bool
     {
         return $user->can(PermissionEnum::OrderAssign->value);

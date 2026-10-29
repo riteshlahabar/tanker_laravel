@@ -18,6 +18,13 @@ trait ApiActingAs
     {
         $token = app(SanctumTokenIssuer::class)->issue($user, $device)['access_token'];
 
+        // The guard caches the user it resolved, and that instance outlives a
+        // request inside one test. Without this, a second `actingAsApi` in
+        // the same test sends the new token and is still answered as the
+        // first user — which surfaces as a baffling 403 from `role:` on a
+        // route the second user is plainly allowed to call.
+        $this->app['auth']->forgetGuards();
+
         $this->withToken($token);
 
         return $this;

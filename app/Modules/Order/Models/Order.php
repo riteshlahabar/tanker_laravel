@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Order\Models;
 
 use App\Models\User;
+use App\Modules\Core\Enums\OrderAlertEnum;
 use App\Modules\Core\Enums\OrderStatusEnum;
 use App\Modules\DeliverySlot\Models\DeliverySlot;
 use App\Modules\Schedule\Models\DeliverySchedule;
@@ -47,6 +48,8 @@ class Order extends Model
         'cancel_reason',
         'notes',
         'created_by',
+        'alert_for',
+        'alert_seen_at',
     ];
 
     /**
@@ -56,6 +59,8 @@ class Order extends Model
     {
         return [
             'status' => OrderStatusEnum::class,
+            'alert_for' => OrderAlertEnum::class,
+            'alert_seen_at' => 'datetime',
             'delivery_date' => 'date',
             'delivery_at' => 'datetime',
             'assigned_at' => 'datetime',
@@ -121,6 +126,20 @@ class Order extends Model
     public function scopeOpen(Builder $query): Builder
     {
         return $query->whereNotIn('status', [OrderStatusEnum::Delivered, OrderStatusEnum::Cancelled]);
+    }
+
+    /**
+     * Orders still ringing for this audience: written for them, not yet seen,
+     * and still worth knowing about.
+     *
+     * The `open()` filter is what makes a cancelled or delivered order stop
+     * ringing without a second write — and, with the driver scope applied on
+     * top, what makes a reassigned order stop on the old driver's phone and
+     * start on the new one's.
+     */
+    public function scopeAlerting(Builder $query, OrderAlertEnum $audience): Builder
+    {
+        return $query->where('alert_for', $audience)->whereNull('alert_seen_at')->open();
     }
 
     public function scopeDeliveredBetween(Builder $query, string $from, string $to): Builder

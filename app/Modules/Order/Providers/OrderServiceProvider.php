@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Modules\Order\Providers;
 
 use App\Modules\Core\Providers\ModuleServiceProvider;
+use App\Modules\Order\Contracts\OrderAlertsInterface;
 use App\Modules\Order\Contracts\OrderNumberGeneratorInterface;
 use App\Modules\Order\Contracts\OrderRepositoryInterface;
 use App\Modules\Order\Contracts\OrderServiceInterface;
 use App\Modules\Order\Models\Order;
 use App\Modules\Order\Policies\OrderPolicy;
 use App\Modules\Order\Repositories\OrderRepository;
+use App\Modules\Order\Services\OrderAlerts;
 use App\Modules\Order\Services\OrderNumberGenerator;
 use App\Modules\Order\Services\OrderService;
 
@@ -30,6 +32,7 @@ final class OrderServiceProvider extends ModuleServiceProvider
             OrderRepositoryInterface::class => OrderRepository::class,
             OrderServiceInterface::class => OrderService::class,
             OrderNumberGeneratorInterface::class => OrderNumberGenerator::class,
+            OrderAlertsInterface::class => OrderAlerts::class,
         ];
     }
 
